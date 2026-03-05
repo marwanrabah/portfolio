@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="referrer" content="no-referrer" />
+  <title>Marawan Rabah</title>
+  <script src="https://player.vimeo.com/api/player.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500&family=Space+Mono:wght@400&display=swap" rel="stylesheet" />
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #040404;
+      --surface: #0c0c0c;
+      --border: #1c1c1c;
+      --text: #f0f0f0;
+      --muted: #555;
+      --accent: #e8e8e8;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 300;
+      overflow-x: hidden;
+    }
+
+    /* ── HERO ─────────────────────────────────────── */
+    .hero {
+      position: relative;
+      width: 100%;
+      height: 100vh;
+      min-height: 600px;
+      background: url('banner.jpg') center / cover no-repeat;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .hero-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(
+        to bottom,
+        rgba(4,4,4,0.25) 0%,
+        rgba(4,4,4,0.55) 60%,
+        rgba(4,4,4,1) 100%
+      );
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 18px;
+    }
+
+    .profile-ring {
+      width: 108px;
+      height: 108px;
+      border-radius: 50%;
+      padding: 2px;
+      background: linear-gradient(135deg, #fff2 0%, #fff6 50%, #fff1 100%);
+    }
+
+    .profile-ring img {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      object-fit: cover;
+      display: block;
+      filter: grayscale(15%);
+    }
+
+    .hero-name {
+      font-size: clamp(28px, 5vw, 52px);
+      font-weight: 300;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: #fff;
+    }
+
+    .hero-title {
+      font-family: 'Space Mono', monospace;
+      font-size: clamp(10px, 1.4vw, 13px);
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    /* ── CONTACT ──────────────────────────────────── */
+    .contact {
+      display: flex;
+      justify-content: center;
+      gap: 16px;
+      padding: 32px 20px 48px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .contact a {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 12px;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      border: 1px solid var(--border);
+      padding: 10px 20px;
+      transition: color 0.2s, border-color 0.2s;
+    }
+
+    .contact a:hover { color: var(--text); border-color: #444; }
+
+    .contact svg { flex-shrink: 0; }
+
+    /* ── SECTION LABEL ────────────────────────────── */
+    .section-label {
+      font-family: 'Space Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.4em;
+      text-transform: uppercase;
+      color: var(--muted);
+      padding: 52px 40px 24px;
+    }
+
+    /* ── VIDEOS ───────────────────────────────────── */
+    .video-scroll-wrap {
+      width: 100%;
+      overflow-x: auto;
+      overflow-y: hidden;
+      padding: 0 40px 40px;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+    }
+
+    .video-scroll-wrap::-webkit-scrollbar { display: none; }
+
+    .video-track {
+      display: flex;
+      gap: 16px;
+      width: max-content;
+    }
+
+    .video-card {
+      position: relative;
+      flex-shrink: 0;
+      width: 340px;
+      height: 220px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      cursor: pointer;
+      overflow: hidden;
+    }
+
+    .video-card video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .mute-overlay {
+      position: absolute;
+      bottom: 12px;
+      right: 12px;
+      width: 32px;
+      height: 32px;
+      background: rgba(0,0,0,0.7);
+      border: 1px solid rgba(255,255,255,0.15);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: opacity 0.2s;
+      pointer-events: none;
+    }
+
+    .video-card:hover .mute-overlay { opacity: 1; }
+    .mute-overlay { opacity: 0.5; }
+
+    /* ── PROJECTS (carousels) ─────────────────────── */
+    .projects-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 16px;
+      padding: 0 40px 56px;
+    }
+
+    .project-card {
+      position: relative;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      aspect-ratio: 4 / 3;
+      overflow: hidden;
+    }
+
+    .project-card img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      transition: opacity 0.35s ease;
+    }
+
+    .carousel-nav {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 10px;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+
+    .project-card:hover .carousel-nav { opacity: 1; }
+
+    .carousel-btn {
+      width: 30px;
+      height: 30px;
+      background: rgba(0,0,0,0.7);
+      border: 1px solid rgba(255,255,255,0.15);
+      color: #fff;
+      font-size: 14px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      user-select: none;
+      flex-shrink: 0;
+    }
+
+    .carousel-btn:hover { background: rgba(0,0,0,0.9); }
+
+    .carousel-counter {
+      position: absolute;
+      bottom: 10px;
+      right: 12px;
+      font-family: 'Space Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.1em;
+      color: rgba(255,255,255,0.5);
+      pointer-events: none;
+    }
+
+    .project-title-bar {
+      padding: 10px 12px;
+      font-size: 11px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--muted);
+      border-top: 1px solid var(--border);
+    }
+
+    /* ── SOCIAL PROOF ─────────────────────────────── */
+    .proof-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 16px;
+      padding: 0 40px 80px;
+    }
+
+    .proof-card {
+      aspect-ratio: 9 / 16;
+      background: var(--surface);
+      border: 1px dashed var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    .proof-card img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .proof-placeholder {
+      font-family: 'Space Mono', monospace;
+      font-size: 9px;
+      letter-spacing: 0.3em;
+      color: #222;
+      text-transform: uppercase;
+    }
+
+    /* ── FOOTER ───────────────────────────────────── */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 24px 40px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 10px;
+      letter-spacing: 0.2em;
+      color: #2a2a2a;
+      text-transform: uppercase;
+    }
+
+    /* ── DRAG-TO-SCROLL (videos) ─────────────────── */
+    .dragging { cursor: grabbing !important; user-select: none; }
+
+    @media (max-width: 640px) {
+      .section-label { padding: 40px 20px 20px; }
+      .video-scroll-wrap { padding: 0 20px 32px; }
+      .projects-grid, .proof-grid { padding: 0 20px 48px; }
+      footer { padding: 20px; flex-direction: column; gap: 8px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ── HERO ── -->
+  <!-- Hero banner: replace banner.jpg with your preferred photo, or it falls back to first project image -->
+  <section class="hero" id="heroSection">
+    <div class="hero-overlay"></div>
+    <div class="hero-content">
+      <div class="profile-ring">
+        <img
+          src="https://instagram.fcai18-1.fna.fbcdn.net/v/t51.2885-19/459786272_896074445911688_2568831938983848101_n.jpg?efg=eyJ2ZW5jb2RlX3RhZyI6InByb2ZpbGVfcGljLmRqYW5nby4xMDgwLmMyIn0&_nc_ht=instagram.fcai18-1.fna.fbcdn.net&_nc_cat=108&_nc_oc=Q6cZ2QEsJ1oN_-C6fxBGEO5k7BD8U-M0R6lof1QPB702tscBIPng89MAVrpjBahZK7wd9jA&_nc_ohc=3zPYVHQD75UQ7kNvwHi6uS6&_nc_gid=FWwcRzbz8QK9-zJkJI59Tg&edm=ALGbJPMBAAAA&ccb=7-5&oh=00_AfypAZw8o96A6NiB8Taki6RpzqXnZoXbyjJlGSpqANWybQ&oe=69AEAF61&_nc_sid=7d3ac5"
+          alt="Marawan Rabah"
+          onerror="this.src='profile.jpg'"
+        />
+      </div>
+      <h1 class="hero-name">Marawan Rabah</h1>
+      <p class="hero-title">Director &nbsp;·&nbsp; AD &nbsp;·&nbsp; Camera Operator</p>
+    </div>
+  </section>
+
+  <!-- ── CONTACT ── -->
+  <div class="contact">
+    <a href="https://wa.me/201062471283" target="_blank" rel="noopener">
+      <!-- WhatsApp icon -->
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+      </svg>
+      WhatsApp
+    </a>
+    <a href="mailto:marawan@email.com">
+      <!-- Email icon -->
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <rect x="2" y="4" width="20" height="16" rx="1"/>
+        <polyline points="2,4 12,13 22,4"/>
+      </svg>
+      Email
+    </a>
+  </div>
+
+  <!-- ── VIDEOS ── -->
+  <div class="section-label">Work</div>
+  <div class="video-scroll-wrap" id="videoScroll">
+    <div class="video-track" id="videoTrack">
+      <!-- Videos are injected by JS below -->
+    </div>
+  </div>
+
+  <!-- ── ADS ── -->
+  <div class="section-label">Ads</div>
+  <div class="video-scroll-wrap" id="adsScroll">
+    <div class="video-track" id="adsTrack"></div>
+  </div>
+
+  <!-- ── PROJECTS ── -->
+  <div class="section-label">Projects</div>
+  <div class="projects-grid" id="projectsGrid">
+    <!-- Project carousels injected by JS below -->
+  </div>
+
+  <!-- ── SOCIAL PROOF ── -->
+  <div class="section-label">Kind Words</div>
+  <div class="proof-grid" id="proofGrid">
+    <!-- Testimonial placeholders injected by JS below -->
+  </div>
+
+  <!-- ── FOOTER ── -->
+  <footer>
+    <span>Marawan Rabah</span>
+    <span>© 2025</span>
+  </footer>
+
+
+  <script>
+    /* ═══════════════════════════════════════════════
+       CONTENT — edit this section to add your media
+    ═══════════════════════════════════════════════ */
+
+    const VIDEOS = [
+      'video1.mp4',
+      'video2.mp4',
+      'video3.mp4',
+      'video4.mp4',
+      'video5.mp4',
+      'video6.mp4',
+    ];
+
+    // Vimeo video IDs for the Ads section
+    const ADS = [
+      '1158169500',
+      '1155811571',
+      '1155799860',
+      '1109703930',
+      '1109680225',
+      '1079889929',
+    ];
+
+    // Each project: { title, images: [] }
+    const PROJECTS = [
+      {
+        title: '',
+        images: ['projects/11.jpg','projects/12.jpg','projects/13.jpg','projects/14.jpg','projects/15.jpg','projects/16.jpg','projects/17.jpg','projects/18.jpg','projects/19.jpg','projects/110.jpg']
+      },
+      {
+        title: '',
+        images: ['projects/21.jpg','projects/22.jpg','projects/23.jpg','projects/24.jpg','projects/25.jpg','projects/26.jpg','projects/27.jpg','projects/28.jpg']
+      },
+      {
+        title: '',
+        images: ['projects/31.jpg','projects/32.jpg','projects/33.jpg','projects/34.jpg','projects/35.jpg','projects/36.jpg','projects/37.jpg','projects/38.jpg','projects/39.jpg']
+      },
+    ];
+
+    // Testimonial screenshot filenames from /testimonials/ folder
+    // Leave empty to show placeholders
+    const TESTIMONIALS = [
+      // 'testimonials/t1.jpg',
+    ];
+
+    // How many placeholder proof cards to show when TESTIMONIALS is empty
+    const PROOF_PLACEHOLDER_COUNT = 3;
+
+    /* ═══════════════════════════════════════════════
+       RENDERER — no need to edit below this line
+    ═══════════════════════════════════════════════ */
+
+    // ── Hero banner fallback ──
+    const heroSection = document.getElementById('heroSection');
+    const bannerTest = new Image();
+    bannerTest.onload = () => { heroSection.style.backgroundImage = "url('banner.jpg')"; };
+    bannerTest.onerror = () => {
+      if (PROJECTS.length > 0) {
+        heroSection.style.backgroundImage = `url('${PROJECTS[0].images[0]}')`;
+      }
+    };
+    bannerTest.src = 'banner.jpg';
+
+    // ── Shared video track builder ──
+    function buildVideoTrack(list, track) {
+      if (list.length === 0) {
+        for (let i = 0; i < 4; i++) {
+          const card = document.createElement('div');
+          card.className = 'video-card';
+          card.style.cssText = 'display:flex;align-items:center;justify-content:center;';
+          card.innerHTML = `<span style="font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.3em;color:#1e1e1e;text-transform:uppercase;">Video ${i+1}</span>`;
+          track.appendChild(card);
+        }
+      } else {
+        list.forEach(src => {
+          const card = document.createElement('div');
+          card.className = 'video-card';
+          const vid = document.createElement('video');
+          vid.src = src; vid.autoplay = true; vid.muted = true; vid.loop = true; vid.playsInline = true;
+          const overlay = document.createElement('div');
+          overlay.className = 'mute-overlay';
+          overlay.innerHTML = mutedIcon();
+          card.appendChild(vid);
+          card.appendChild(overlay);
+          card.addEventListener('click', () => {
+            vid.muted = !vid.muted;
+            overlay.innerHTML = vid.muted ? mutedIcon() : unmutedIcon();
+          });
+          track.appendChild(card);
+        });
+      }
+    }
+
+    // ── Videos ──
+    buildVideoTrack(VIDEOS, document.getElementById('videoTrack'));
+
+    function mutedIcon() {
+      return `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2">
+        <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+        <line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/>
+      </svg>`;
+    }
+
+    function unmutedIcon() {
+      return `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2">
+        <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+        <path d="M19.07 4.93a10 10 0 010 14.14M15.54 8.46a5 5 0 010 7.07"/>
+      </svg>`;
+    }
+
+    // ── Ads (Vimeo embeds) ──
+    const adsTrack = document.getElementById('adsTrack');
+    ADS.forEach(id => {
+      const card = document.createElement('div');
+      card.className = 'video-card';
+      card.style.cursor = 'pointer';
+
+      const iframe = document.createElement('iframe');
+      iframe.src = `https://player.vimeo.com/video/${id}?autoplay=1&muted=1&loop=1&background=1`;
+      iframe.style.cssText = 'width:100%;height:100%;border:none;pointer-events:none;';
+      iframe.allow = 'autoplay; fullscreen';
+
+      const muteBtn = document.createElement('div');
+      muteBtn.className = 'mute-overlay';
+      muteBtn.style.opacity = '0.5';
+      muteBtn.innerHTML = mutedIcon();
+
+      card.appendChild(iframe);
+      card.appendChild(muteBtn);
+
+      let muted = true;
+      const player = new Vimeo.Player(iframe);
+
+      card.addEventListener('click', () => {
+        muted = !muted;
+        player.setMuted(muted);
+        muteBtn.innerHTML = muted ? mutedIcon() : unmutedIcon();
+      });
+
+      card.addEventListener('mouseenter', () => muteBtn.style.opacity = '1');
+      card.addEventListener('mouseleave', () => muteBtn.style.opacity = '0.5');
+
+      adsTrack.appendChild(card);
+    });
+
+    // ── Drag-to-scroll ──
+    [document.getElementById('videoScroll'), document.getElementById('adsScroll')].forEach(wrap => {
+      let isDown = false, startX, scrollLeft;
+      wrap.addEventListener('mousedown', e => {
+        isDown = true; wrap.classList.add('dragging');
+        startX = e.pageX - wrap.offsetLeft; scrollLeft = wrap.scrollLeft;
+      });
+      wrap.addEventListener('mouseleave', () => { isDown = false; wrap.classList.remove('dragging'); });
+      wrap.addEventListener('mouseup',    () => { isDown = false; wrap.classList.remove('dragging'); });
+      wrap.addEventListener('mousemove',  e => {
+        if (!isDown) return;
+        e.preventDefault();
+        wrap.scrollLeft = scrollLeft - (e.pageX - wrap.offsetLeft - startX) * 1.4;
+      });
+    });
+
+    // ── Projects ──
+    const projectsGrid = document.getElementById('projectsGrid');
+
+    if (PROJECTS.length === 0) {
+      for (let i = 0; i < 3; i++) {
+        const wrapper = document.createElement('div');
+        const card = document.createElement('div');
+        card.className = 'project-card';
+        card.style.cssText = 'display:flex;align-items:center;justify-content:center;';
+        card.innerHTML = `<span style="font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.3em;color:#1e1e1e;text-transform:uppercase;">Project ${i+1}</span>`;
+        const bar = document.createElement('div');
+        bar.className = 'project-title-bar';
+        bar.textContent = `Project ${i+1}`;
+        wrapper.appendChild(card);
+        wrapper.appendChild(bar);
+        projectsGrid.appendChild(wrapper);
+      }
+    } else {
+      PROJECTS.forEach(project => {
+        const wrapper = document.createElement('div');
+        const card = document.createElement('div');
+        card.className = 'project-card';
+
+        let current = 0;
+
+        const img = document.createElement('img');
+        img.src = project.images[0];
+        img.alt = project.title;
+
+        const nav = document.createElement('div');
+        nav.className = 'carousel-nav';
+
+        const prev = document.createElement('button');
+        prev.className = 'carousel-btn';
+        prev.innerHTML = '&#8592;';
+
+        const next = document.createElement('button');
+        next.className = 'carousel-btn';
+        next.innerHTML = '&#8594;';
+
+        const counter = document.createElement('div');
+        counter.className = 'carousel-counter';
+
+        function update() {
+          img.style.opacity = '0';
+          setTimeout(() => {
+            img.src = project.images[current];
+            img.style.opacity = '1';
+          }, 180);
+          counter.textContent = `${String(current + 1).padStart(2,'0')} / ${String(project.images.length).padStart(2,'0')}`;
+        }
+
+        prev.addEventListener('click', e => {
+          e.stopPropagation();
+          current = (current - 1 + project.images.length) % project.images.length;
+          update();
+        });
+
+        next.addEventListener('click', e => {
+          e.stopPropagation();
+          current = (current + 1) % project.images.length;
+          update();
+        });
+
+        update();
+        nav.appendChild(prev);
+        nav.appendChild(next);
+        card.appendChild(img);
+        if (project.images.length > 1) {
+          card.appendChild(nav);
+          card.appendChild(counter);
+        }
+
+        if (project.title) {
+          const bar = document.createElement('div');
+          bar.className = 'project-title-bar';
+          bar.textContent = project.title;
+          wrapper.appendChild(card);
+          wrapper.appendChild(bar);
+        } else {
+          wrapper.appendChild(card);
+        }
+        projectsGrid.appendChild(wrapper);
+      });
+    }
+
+    // ── Social Proof ──
+    const proofGrid = document.getElementById('proofGrid');
+
+    const proofItems = TESTIMONIALS.length > 0
+      ? TESTIMONIALS
+      : Array(PROOF_PLACEHOLDER_COUNT).fill(null);
+
+    proofItems.forEach((src, i) => {
+      const card = document.createElement('div');
+      card.className = 'proof-card';
+      if (src) {
+        const img = document.createElement('img');
+        img.src = src;
+        img.alt = `Testimonial ${i+1}`;
+        card.appendChild(img);
+      } else {
+        const p = document.createElement('p');
+        p.className = 'proof-placeholder';
+        p.textContent = 'Testimonial';
+        card.appendChild(p);
+      }
+      proofGrid.appendChild(card);
+    });
+  </script>
+
+</body>
+</html>
