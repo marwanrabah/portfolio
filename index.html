@@ -163,11 +163,24 @@
       overflow: hidden;
     }
 
+    .video-card.reel-card {
+      width: 260px;
+      height: 462px;
+    }
+
     .video-card video {
       width: 100%;
       height: 100%;
       object-fit: cover;
       display: block;
+    }
+
+    .video-card iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+      display: block;
+      pointer-events: none;
     }
 
     .mute-overlay {
@@ -371,6 +384,12 @@
     <div class="video-track" id="adsTrack"></div>
   </div>
 
+  <!-- ── REELS ── -->
+  <div class="section-label">Reels</div>
+  <div class="video-scroll-wrap" id="reelsScroll">
+    <div class="video-track" id="reelsTrack"></div>
+  </div>
+
   <!-- ── PROJECTS ── -->
   <div class="section-label">Projects</div>
   <div class="projects-grid" id="projectsGrid">
@@ -397,6 +416,19 @@
       'video4.mp4',
       'video5.mp4',
       'video6.mp4',
+      'youtube media/klZoxaOZhaU.mp4',
+      'youtube media/L6TfvP04u1g.mp4',
+    ];
+
+    const REELS = [
+      'youtube media/b6xBVmn9Jek.mp4',
+      'youtube media/xiNh6f_ogVA.mp4',
+      'youtube media/mJMwnw6rWGg.mp4',
+      'youtube media/XVfvGTBCNtM.mp4',
+      'youtube media/XRS-mJe7aXM.mp4',
+      'youtube media/Ay-zXQJEMwg.mp4',
+      'youtube media/s7C0h1_36n0.mp4',
+      'youtube media/N5ee7UZBs9E.mp4',
     ];
 
     // Vimeo video IDs for the Ads section
@@ -451,10 +483,13 @@
 
     // ── Shared video track builder ──
     function buildVideoTrack(list, track) {
+      const isReelsTrack = track.id === 'reelsTrack';
+
       if (list.length === 0) {
         for (let i = 0; i < 4; i++) {
           const card = document.createElement('div');
           card.className = 'video-card';
+          if (isReelsTrack) card.classList.add('reel-card');
           card.style.cssText = 'display:flex;align-items:center;justify-content:center;';
           card.innerHTML = `<span style="font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.3em;color:#1e1e1e;text-transform:uppercase;">Video ${i+1}</span>`;
           track.appendChild(card);
@@ -463,17 +498,25 @@
         list.forEach(src => {
           const card = document.createElement('div');
           card.className = 'video-card';
+          if (isReelsTrack) card.classList.add('reel-card');
           const vid = document.createElement('video');
-          vid.src = src; vid.autoplay = true; vid.muted = true; vid.loop = true; vid.playsInline = true;
+          vid.src = src;
+          vid.autoplay = true;
+          vid.muted = true;
+          vid.loop = true;
+          vid.playsInline = true;
           const overlay = document.createElement('div');
           overlay.className = 'mute-overlay';
           overlay.innerHTML = mutedIcon();
+
           card.appendChild(vid);
           card.appendChild(overlay);
+
           card.addEventListener('click', () => {
             vid.muted = !vid.muted;
             overlay.innerHTML = vid.muted ? mutedIcon() : unmutedIcon();
           });
+
           track.appendChild(card);
         });
       }
@@ -481,6 +524,7 @@
 
     // ── Videos ──
     buildVideoTrack(VIDEOS, document.getElementById('videoTrack'));
+    buildVideoTrack(REELS, document.getElementById('reelsTrack'));
 
     function mutedIcon() {
       return `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2">
@@ -532,7 +576,7 @@
     });
 
     // ── Drag-to-scroll ──
-    [document.getElementById('videoScroll'), document.getElementById('adsScroll')].forEach(wrap => {
+    [document.getElementById('videoScroll'), document.getElementById('reelsScroll'), document.getElementById('adsScroll')].forEach(wrap => {
       let isDown = false, startX, scrollLeft;
       wrap.addEventListener('mousedown', e => {
         isDown = true; wrap.classList.add('dragging');
