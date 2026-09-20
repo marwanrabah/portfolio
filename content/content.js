@@ -49,6 +49,7 @@ window.SITE_CONTENT = {
         { id: '1109703930', title: 'Ad 4' },
         { id: '1109680225', title: 'Ad 5' },
         { id: '1079889929', title: 'Ad 6' },
+        { id: '1228630827', title: 'Ad 7' },
       ],
     },
     {
