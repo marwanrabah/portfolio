@@ -6,7 +6,7 @@
   <meta name="referrer" content="no-referrer" />
   <title>Marawan Rabah</title>
   <script src="https://player.vimeo.com/api/player.js"></script>
-  <script src="content/content.js?v=reel-order"></script>
+  <script src="content/content.js?v=project-swipe"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500&family=Space+Mono:wght@400&display=swap" rel="stylesheet" />
 
@@ -222,6 +222,14 @@
 
     .video-card:hover .mute-overlay { opacity: 1; }
     .mute-overlay { opacity: 0.5; }
+    .video-card.is-playing .mute-overlay {
+      opacity: 0;
+      pointer-events: none;
+    }
+    .video-card.is-playing:hover .mute-overlay {
+      opacity: 1;
+      pointer-events: auto;
+    }
 
     /* ── PROJECTS (carousels) ─────────────────────── */
     .projects-grid {
@@ -237,6 +245,7 @@
       border: 1px solid var(--border);
       aspect-ratio: 4 / 3;
       overflow: hidden;
+      touch-action: pan-y;
     }
 
     .project-card img {
@@ -643,7 +652,7 @@
     }
 
   </script>
-  <script src="content/renderer.js?v=mobile-autoplay"></script>
+  <script src="content/renderer.js?v=nonblocking-controls"></script>
 
 </body>
 </html>

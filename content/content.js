@@ -107,7 +107,7 @@ window.SITE_CONTENT = {
           ],
         },
         {
-          title: 'Instagram project carousel',
+          title: 'Project four',
           images: [
             'media/projects/igexport-DdHYJE_jJ_8.jpg',
             'media/projects/igexport-DdHYJE_jJ_8-2.jpg',

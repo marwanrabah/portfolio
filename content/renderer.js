@@ -69,6 +69,7 @@ const videoObserver = 'IntersectionObserver' in window
           if (isMobileViewport() && video.dataset.mobileAutoplay === 'true') {
             video.currentTime = 0;
             video.load();
+            video.closest('.video-card')?.classList.remove('is-playing');
             const overlay = video.nextElementSibling;
             if (overlay && overlay.classList.contains('mute-overlay')) {
               overlay.innerHTML = playIcon();
@@ -181,6 +182,7 @@ function renderVideos(items, track, isReels) {
       video.pause();
       video.currentTime = 0;
       video.load();
+      card.classList.remove('is-playing');
       overlay.innerHTML = playIcon();
       overlay.setAttribute('aria-label', `Play ${item.title || 'video'}`);
     };
@@ -193,7 +195,16 @@ function renderVideos(items, track, isReels) {
         stopVideo();
       }
     });
+    card.addEventListener('click', () => {
+      if (video.paused) {
+        ensureVideoLoaded();
+        video.play().catch(() => {});
+      } else {
+        stopVideo();
+      }
+    });
     video.addEventListener('play', () => {
+      card.classList.add('is-playing');
       overlay.innerHTML = pauseIcon();
       overlay.setAttribute('aria-label', `Stop ${item.title || 'video'}`);
     });
@@ -226,21 +237,31 @@ function renderYoutube(items, track) {
     control.setAttribute('aria-label', `Play ${item.title || 'video'}`);
     control.innerHTML = playIcon();
     let started = false;
-    control.addEventListener('click', () => {
+    const stop = () => {
+      iframe.src = 'about:blank';
+      poster.style.display = 'block';
+      control.innerHTML = playIcon();
+      control.setAttribute('aria-label', `Play ${item.title || 'video'}`);
+      card.classList.remove('is-playing');
+      started = false;
+    };
+    const start = () => {
+      iframe.src = `https://www.youtube-nocookie.com/embed/${item.id}?autoplay=1&mute=0&loop=1&playlist=${item.id}`;
+      poster.style.display = 'none';
+      control.innerHTML = pauseIcon();
+      control.setAttribute('aria-label', `Stop ${item.title || 'video'}`);
+      card.classList.add('is-playing');
+      started = true;
+    };
+    control.addEventListener('click', event => {
+      event.stopPropagation();
       if (!started) {
-        iframe.src = `https://www.youtube-nocookie.com/embed/${item.id}?autoplay=1&mute=0&loop=1&playlist=${item.id}`;
-        poster.style.display = 'none';
-        control.innerHTML = pauseIcon();
-        control.setAttribute('aria-label', `Stop ${item.title || 'video'}`);
-        started = true;
+        start();
       } else {
-        iframe.src = 'about:blank';
-        poster.style.display = 'block';
-        control.innerHTML = playIcon();
-        control.setAttribute('aria-label', `Play ${item.title || 'video'}`);
-        started = false;
+        stop();
       }
     });
+    card.addEventListener('click', () => { if (started) stop(); else start(); });
     card.append(poster, iframe, control);
     track.appendChild(card);
   });
@@ -264,21 +285,31 @@ function renderVimeo(items, track) {
     control.setAttribute('aria-label', `Play ${item.title || 'video'}`);
     control.innerHTML = playIcon();
     let started = false;
-    control.addEventListener('click', () => {
+    const stop = () => {
+      iframe.src = 'about:blank';
+      poster.style.display = 'block';
+      control.innerHTML = playIcon();
+      control.setAttribute('aria-label', `Play ${item.title || 'video'}`);
+      card.classList.remove('is-playing');
+      started = false;
+    };
+    const start = () => {
+      iframe.src = `https://player.vimeo.com/video/${item.id}?autoplay=1&muted=0&loop=1&background=1`;
+      poster.style.display = 'none';
+      control.innerHTML = pauseIcon();
+      control.setAttribute('aria-label', `Stop ${item.title || 'video'}`);
+      card.classList.add('is-playing');
+      started = true;
+    };
+    control.addEventListener('click', event => {
+      event.stopPropagation();
       if (!started) {
-        iframe.src = `https://player.vimeo.com/video/${item.id}?autoplay=1&muted=0&loop=1&background=1`;
-        poster.style.display = 'none';
-        control.innerHTML = pauseIcon();
-        control.setAttribute('aria-label', `Stop ${item.title || 'video'}`);
-        started = true;
+        start();
       } else {
-        iframe.src = 'about:blank';
-        poster.style.display = 'block';
-        control.innerHTML = playIcon();
-        control.setAttribute('aria-label', `Play ${item.title || 'video'}`);
-        started = false;
+        stop();
       }
     });
+    card.addEventListener('click', () => { if (started) stop(); else start(); });
     card.append(poster, iframe, control);
     track.appendChild(card);
   });
@@ -321,6 +352,21 @@ function renderProjects(projects, grid) {
       current = (current + direction + project.images.length) % project.images.length;
       update();
     };
+    let touchStartX = 0;
+    let touchStartY = 0;
+    card.addEventListener('touchstart', event => {
+      const touch = event.changedTouches[0];
+      touchStartX = touch.clientX;
+      touchStartY = touch.clientY;
+    }, { passive: true });
+    card.addEventListener('touchend', event => {
+      const touch = event.changedTouches[0];
+      const deltaX = touch.clientX - touchStartX;
+      const deltaY = touch.clientY - touchStartY;
+      if (Math.abs(deltaX) > 30 && Math.abs(deltaX) > Math.abs(deltaY)) {
+        move(deltaX < 0 ? 1 : -1);
+      }
+    }, { passive: true });
     const prev = document.createElement('button');
     prev.className = 'carousel-btn';
     prev.innerHTML = '&#8592;';
