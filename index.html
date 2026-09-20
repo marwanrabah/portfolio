@@ -6,6 +6,7 @@
   <meta name="referrer" content="no-referrer" />
   <title>Marawan Rabah</title>
   <script src="https://player.vimeo.com/api/player.js"></script>
+  <script src="content/content.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500&family=Space+Mono:wght@400&display=swap" rel="stylesheet" />
 
@@ -37,7 +38,7 @@
       width: 100%;
       height: 100vh;
       min-height: 600px;
-      background: url('banner.jpg') center / cover no-repeat;
+      background: url('media/hero/banner.jpg') center / cover no-repeat;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -335,15 +336,14 @@
 <body>
 
   <!-- ── HERO ── -->
-  <!-- Hero banner: replace banner.jpg with your preferred photo, or it falls back to first project image -->
+  <!-- Hero media is configured in content/content.js -->
   <section class="hero" id="heroSection">
     <div class="hero-overlay"></div>
     <div class="hero-content">
       <div class="profile-ring">
         <img
-          src="https://instagram.fcai18-1.fna.fbcdn.net/v/t51.2885-19/459786272_896074445911688_2568831938983848101_n.jpg?efg=eyJ2ZW5jb2RlX3RhZyI6InByb2ZpbGVfcGljLmRqYW5nby4xMDgwLmMyIn0&_nc_ht=instagram.fcai18-1.fna.fbcdn.net&_nc_cat=108&_nc_oc=Q6cZ2QEsJ1oN_-C6fxBGEO5k7BD8U-M0R6lof1QPB702tscBIPng89MAVrpjBahZK7wd9jA&_nc_ohc=3zPYVHQD75UQ7kNvwHi6uS6&_nc_gid=FWwcRzbz8QK9-zJkJI59Tg&edm=ALGbJPMBAAAA&ccb=7-5&oh=00_AfypAZw8o96A6NiB8Taki6RpzqXnZoXbyjJlGSpqANWybQ&oe=69AEAF61&_nc_sid=7d3ac5"
+          src="media/hero/profile.jpg"
           alt="Marawan Rabah"
-          onerror="this.src='profile.jpg'"
         />
       </div>
       <h1 class="hero-name">Marawan Rabah</h1>
@@ -370,31 +370,8 @@
     </a>
   </div>
 
-  <!-- ── VIDEOS ── -->
-  <div class="section-label">Work</div>
-  <div class="video-scroll-wrap" id="videoScroll">
-    <div class="video-track" id="videoTrack">
-      <!-- Videos are injected by JS below -->
-    </div>
-  </div>
-
-  <!-- ── ADS ── -->
-  <div class="section-label">Ads</div>
-  <div class="video-scroll-wrap" id="adsScroll">
-    <div class="video-track" id="adsTrack"></div>
-  </div>
-
-  <!-- ── REELS ── -->
-  <div class="section-label">Reels</div>
-  <div class="video-scroll-wrap" id="reelsScroll">
-    <div class="video-track" id="reelsTrack"></div>
-  </div>
-
-  <!-- ── PROJECTS ── -->
-  <div class="section-label">Projects</div>
-  <div class="projects-grid" id="projectsGrid">
-    <!-- Project carousels injected by JS below -->
-  </div>
+  <!-- Sections are generated in the order defined by content/content.js. -->
+  <main id="sectionsRoot"></main>
 
 
   <!-- ── FOOTER ── -->
@@ -404,67 +381,34 @@
   </footer>
 
 
-  <script>
+  <script type="text/plain" id="legacy-renderer">
     /* ═══════════════════════════════════════════════
        CONTENT — edit this section to add your media
     ═══════════════════════════════════════════════ */
 
-    const VIDEOS = [
-      'video1.mp4',
-      'video2.mp4',
-      'video3.mp4',
-      'video4.mp4',
-      'video5.mp4',
-      'video6.mp4',
-      'youtube media/klZoxaOZhaU.mp4',
-      'youtube media/L6TfvP04u1g.mp4',
-    ];
+    const CONTENT = window.SITE_CONTENT;
+    const VIDEOS = CONTENT.sections.work.videos;
+    const REELS = CONTENT.sections.reels.videos;
+    const ADS = CONTENT.sections.ads.vimeo;
+    const PROJECTS = CONTENT.sections.projects.items;
+    const TESTIMONIALS = CONTENT.testimonials;
+    document.querySelector('.hero-name').textContent = CONTENT.hero.name;
+    document.querySelector('.hero-title').textContent = CONTENT.hero.role;
+    document.querySelector('.profile-ring img').src = CONTENT.hero.profile;
+    document.querySelector('.contact a[href^="https://wa.me"]').href = CONTENT.contact.whatsapp;
+    document.querySelector('.contact a[href^="mailto:"]').href = CONTENT.contact.email;
 
-    const REELS = [
-      'youtube media/b6xBVmn9Jek.mp4',
-      'youtube media/xiNh6f_ogVA.mp4',
-      'youtube media/mJMwnw6rWGg.mp4',
-      'youtube media/XVfvGTBCNtM.mp4',
-      'youtube media/XRS-mJe7aXM.mp4',
-      'youtube media/Ay-zXQJEMwg.mp4',
-      'youtube media/s7C0h1_36n0.mp4',
-      'youtube media/N5ee7UZBs9E.mp4',
-    ];
-
-    // Vimeo video IDs for the Ads section
-    const ADS = [
-      '1158169500',
-      '1155811571',
-      '1155799860',
-      '1109703930',
-      '1109680225',
-      '1079889929',
-    ];
-
-    // Each project: { title, images: [] }
-    const PROJECTS = [
-      {
-        title: '',
-        images: ['projects/11.jpg','projects/12.jpg','projects/13.jpg','projects/14.jpg','projects/15.jpg','projects/16.jpg','projects/17.jpg','projects/18.jpg','projects/19.jpg','projects/110.jpg']
-      },
-      {
-        title: '',
-        images: ['projects/21.jpg','projects/22.jpg','projects/23.jpg','projects/24.jpg','projects/25.jpg','projects/26.jpg','projects/27.jpg','projects/28.jpg']
-      },
-      {
-        title: '',
-        images: ['projects/31.jpg','projects/32.jpg','projects/33.jpg','projects/34.jpg','projects/35.jpg','projects/36.jpg','projects/37.jpg','projects/38.jpg','projects/39.jpg']
-      },
-    ];
-
-    // Testimonial screenshot filenames from /testimonials/ folder
-    // Leave empty to show placeholders
-    const TESTIMONIALS = [
-      // 'testimonials/t1.jpg',
-    ];
-
-    // How many placeholder proof cards to show when TESTIMONIALS is empty
-    const PROOF_PLACEHOLDER_COUNT = 3;
+    // Section titles and visibility are controlled in content/content.js.
+    [['work', 'videoScroll', 'workLabel'], ['ads', 'adsScroll', 'adsLabel'],
+      ['reels', 'reelsScroll', 'reelsLabel'], ['projects', 'projectsGrid', 'projectsLabel']]
+      .forEach(([key, contentId, labelId]) => {
+        const section = CONTENT.sections[key];
+        document.getElementById(labelId).textContent = section.title;
+        if (!section.enabled) {
+          document.getElementById(labelId).hidden = true;
+          document.getElementById(contentId).hidden = true;
+        }
+      });
 
     /* ═══════════════════════════════════════════════
        RENDERER — no need to edit below this line
@@ -473,13 +417,13 @@
     // ── Hero banner fallback ──
     const heroSection = document.getElementById('heroSection');
     const bannerTest = new Image();
-    bannerTest.onload = () => { heroSection.style.backgroundImage = "url('banner.jpg')"; };
+    bannerTest.onload = () => { heroSection.style.backgroundImage = `url('${CONTENT.hero.banner}')`; };
     bannerTest.onerror = () => {
       if (PROJECTS.length > 0) {
         heroSection.style.backgroundImage = `url('${PROJECTS[0].images[0]}')`;
       }
     };
-    bannerTest.src = 'banner.jpg';
+    bannerTest.src = CONTENT.hero.banner;
 
     // ── Shared video track builder ──
     function buildVideoTrack(list, track) {
@@ -677,30 +621,8 @@
       });
     }
 
-    // ── Social Proof ──
-    const proofGrid = document.getElementById('proofGrid');
-
-    const proofItems = TESTIMONIALS.length > 0
-      ? TESTIMONIALS
-      : Array(PROOF_PLACEHOLDER_COUNT).fill(null);
-
-    proofItems.forEach((src, i) => {
-      const card = document.createElement('div');
-      card.className = 'proof-card';
-      if (src) {
-        const img = document.createElement('img');
-        img.src = src;
-        img.alt = `Testimonial ${i+1}`;
-        card.appendChild(img);
-      } else {
-        const p = document.createElement('p');
-        p.className = 'proof-placeholder';
-        p.textContent = 'Testimonial';
-        card.appendChild(p);
-      }
-      proofGrid.appendChild(card);
-    });
   </script>
+  <script src="content/renderer.js"></script>
 
 </body>
 </html>
