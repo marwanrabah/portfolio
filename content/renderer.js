@@ -31,6 +31,11 @@ function unmutedIcon() {
   </svg>`;
 }
 
+function localPosterPath(src) {
+  const filename = src.split('/').pop().replace(/\.[^.]+$/, '');
+  return `media/posters/${filename}.jpg`;
+}
+
 // Load local videos shortly before they enter the viewport instead of
 // downloading every video when the page first opens.
 const videoObserver = 'IntersectionObserver' in window
@@ -129,6 +134,7 @@ function renderVideos(items, track, isReels) {
     card.title = item.title || '';
     const video = document.createElement('video');
     video.dataset.src = item.src;
+    video.poster = item.poster || localPosterPath(item.src);
     video.preload = 'none';
     video.muted = true;
     video.loop = true;
@@ -167,7 +173,12 @@ function renderYoutube(items, track) {
     iframe.allow = 'autoplay; encrypted-media; picture-in-picture';
     iframe.allowFullscreen = true;
     iframe.loading = 'lazy';
-    card.appendChild(iframe);
+    const poster = document.createElement('img');
+    poster.className = 'video-poster';
+    poster.src = item.poster || `https://i.ytimg.com/vi/${item.id}/hqdefault.jpg`;
+    poster.alt = item.title || 'Video thumbnail';
+    iframe.addEventListener('load', () => poster.remove());
+    card.append(poster, iframe);
     track.appendChild(card);
   });
 }
@@ -181,10 +192,15 @@ function renderVimeo(items, track) {
     iframe.src = `https://player.vimeo.com/video/${item.id}?autoplay=1&muted=1&loop=1&background=1`;
     iframe.allow = 'autoplay; fullscreen';
     iframe.loading = 'lazy';
+    const poster = document.createElement('img');
+    poster.className = 'video-poster';
+    poster.src = item.poster || `https://vumbnail.com/${item.id}.jpg`;
+    poster.alt = item.title || 'Video thumbnail';
+    iframe.addEventListener('load', () => poster.remove());
     const muteButton = document.createElement('div');
     muteButton.className = 'mute-overlay';
     muteButton.innerHTML = mutedIcon();
-    card.append(iframe, muteButton);
+    card.append(poster, iframe, muteButton);
     let muted = true;
     const player = new Vimeo.Player(iframe);
     card.addEventListener('click', () => {
