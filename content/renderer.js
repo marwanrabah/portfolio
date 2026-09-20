@@ -1,6 +1,7 @@
 /* The page renderer. Edit content/content.js instead of this file. */
 const CONTENT = window.SITE_CONTENT;
 const sectionsRoot = document.getElementById('sectionsRoot');
+const isMobileViewport = () => window.matchMedia('(max-width: 767px)').matches;
 
 document.querySelector('.hero-name').textContent = CONTENT.hero.name;
 document.querySelector('.hero-title').textContent = CONTENT.hero.role;
@@ -59,8 +60,21 @@ const videoObserver = 'IntersectionObserver' in window
             video.src = video.dataset.src;
             video.preload = 'metadata';
           }
+          if (isMobileViewport() && video.dataset.mobileAutoplay === 'true') {
+            video.muted = true;
+            video.play().catch(() => {});
+          }
         } else {
           video.pause();
+          if (isMobileViewport() && video.dataset.mobileAutoplay === 'true') {
+            video.currentTime = 0;
+            video.load();
+            const overlay = video.nextElementSibling;
+            if (overlay && overlay.classList.contains('mute-overlay')) {
+              overlay.innerHTML = playIcon();
+              overlay.setAttribute('aria-label', `Play ${video.title || 'video'}`);
+            }
+          }
         }
       });
     }, { rootMargin: '320px 0px' })
@@ -145,6 +159,7 @@ function renderVideos(items, track, isReels) {
     card.title = item.title || '';
     const video = document.createElement('video');
     video.dataset.src = item.src;
+    video.dataset.mobileAutoplay = 'true';
     video.poster = item.poster || localPosterPath(item.src);
     video.preload = 'none';
     video.muted = false;
