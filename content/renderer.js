@@ -190,6 +190,7 @@ function renderVideos(items, track, isReels) {
       event.stopPropagation();
       ensureVideoLoaded();
       if (video.paused) {
+        video.muted = false;
         video.play().catch(() => {});
       } else {
         stopVideo();
@@ -198,6 +199,10 @@ function renderVideos(items, track, isReels) {
     card.addEventListener('click', () => {
       if (video.paused) {
         ensureVideoLoaded();
+        video.muted = false;
+        video.play().catch(() => {});
+      } else if (isMobileViewport() && video.muted) {
+        video.muted = false;
         video.play().catch(() => {});
       } else {
         stopVideo();
