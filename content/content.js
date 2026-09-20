@@ -29,14 +29,14 @@ window.SITE_CONTENT = {
       // WORK VIDEOS — landscape videos in media/work/
       id: 'work', title: 'Work', type: 'videos', enabled: true,
       items: [
+        { embed: 'vimeo', id: '1219228625', title: 'Vimeo work video' },
+        { src: 'media/work/work-instagram-DbGvmKbIYNr.mp4', title: 'Instagram work video' },
+        { src: 'media/work/video6.mp4', title: 'Work video 6' },
         { src: 'media/work/video1.mp4', title: 'Work video 1' },
         { src: 'media/work/video2.mp4', title: 'Work video 2' },
         { src: 'media/work/video3.mp4', title: 'Work video 3' },
         { src: 'media/work/video4.mp4', title: 'Work video 4' },
         { src: 'media/work/video5.mp4', title: 'Work video 5' },
-        { src: 'media/work/video6.mp4', title: 'Work video 6' },
-        { embed: 'vimeo', id: '1219228625', title: 'Vimeo work video' },
-        { external: 'https://www.instagram.com/p/DbGvmKbIYNr/', title: 'Instagram work video' },
       ],
     },
     {
@@ -52,12 +52,12 @@ window.SITE_CONTENT = {
       ],
     },
     {
-      // MUSIC VIDEOS — YouTube links. Local downloads can replace these later.
-      id: 'music-videos', title: 'Music Videos', type: 'youtube', enabled: true,
+      // MUSIC VIDEOS — downloaded locally into media/music-videos/
+      id: 'music-videos', title: 'Music Videos', type: 'videos', enabled: true,
       items: [
-        { id: 'Zct20ON2u_A', title: 'Music video 1', url: 'https://youtu.be/Zct20ON2u_A?si=ItNUlxTOfM2Jt_yp' },
-        { id: 'rgdSp5Jk4P0', title: 'Music video 2', url: 'https://youtu.be/rgdSp5Jk4P0?si=TU6Zu0xlLGW-IUzO' },
-        { id: '8_1dU9pnUNM', title: 'Music video 3', url: 'https://youtu.be/8_1dU9pnUNM?si=m3dXAFqzBYhhjUYq' },
+        { src: 'media/music-videos/music-Zct20ON2u_A.mp4', title: 'Music video 1' },
+        { src: 'media/music-videos/music-rgdSp5Jk4P0.mp4', title: 'Music video 2' },
+        { src: 'media/music-videos/music-8_1dU9pnUNM.mp4', title: 'Music video 3' },
       ],
     },
     {
@@ -106,9 +106,29 @@ window.SITE_CONTENT = {
           ],
         },
         {
-          title: 'Instagram project image',
-          images: [],
-          external: 'https://www.instagram.com/p/DdHYJE_jJ_8/',
+          title: 'Instagram project carousel',
+          images: [
+            'media/projects/igexport-DdHYJE_jJ_8.jpg',
+            'media/projects/igexport-DdHYJE_jJ_8-2.jpg',
+            'media/projects/igexport-DdHYJE_jJ_8-3.jpg',
+            'media/projects/igexport-DdHYJE_jJ_8-4.jpg',
+            'media/projects/igexport-DdHYJE_jJ_8-5.jpg',
+            'media/projects/igexport-DdHYJE_jJ_8-6.jpg',
+            'media/projects/igexport-DdHYJE_jJ_8-7.jpg',
+            'media/projects/igexport-DdHYJE_jJ_8-8.jpg',
+            'media/projects/igexport-DdHYJE_jJ_8-9.jpg',
+            'media/projects/igexport-DdHYJE_jJ_8-10.jpg',
+            'media/projects/igexport-DdHYJE_jJ_8-11.jpg',
+            'media/projects/igexport-DdHYJE_jJ_8-12.jpg',
+            'media/projects/igexport-DdHYJE_jJ_8-13.jpg',
+            'media/projects/igexport-DdHYJE_jJ_8-14.jpg',
+            'media/projects/igexport-DdHYJE_jJ_8-15.jpg',
+            'media/projects/igexport-DdHYJE_jJ_8-16.jpg',
+            'media/projects/igexport-DdHYJE_jJ_8-17.jpg',
+            'media/projects/igexport-DdHYJE_jJ_8-18.jpg',
+            'media/projects/igexport-DdHYJE_jJ_8-19.jpg',
+            'media/projects/igexport-DdHYJE_jJ_8-20.jpg',
+          ],
         },
       ],
     },
