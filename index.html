@@ -6,7 +6,7 @@
   <meta name="referrer" content="no-referrer" />
   <title>Marawan Rabah</title>
   <script src="https://player.vimeo.com/api/player.js"></script>
-  <script src="content/content.js?v=video-posters"></script>
+  <script src="content/content.js?v=video-controls"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500&family=Space+Mono:wght@400&display=swap" rel="stylesheet" />
 
@@ -213,7 +213,9 @@
       align-items: center;
       justify-content: center;
       transition: opacity 0.2s;
-      pointer-events: none;
+      pointer-events: auto;
+      cursor: pointer;
+      padding: 0;
     }
 
     .video-card:hover .mute-overlay { opacity: 1; }
@@ -639,7 +641,7 @@
     }
 
   </script>
-  <script src="content/renderer.js?v=video-posters"></script>
+  <script src="content/renderer.js?v=video-controls"></script>
 
 </body>
 </html>

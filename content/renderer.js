@@ -31,6 +31,18 @@ function unmutedIcon() {
   </svg>`;
 }
 
+function playIcon() {
+  return `<svg width="14" height="14" viewBox="0 0 24 24" fill="#fff">
+    <polygon points="8,5 19,12 8,19"/>
+  </svg>`;
+}
+
+function pauseIcon() {
+  return `<svg width="14" height="14" viewBox="0 0 24 24" fill="#fff">
+    <rect x="6" y="5" width="4" height="14"/><rect x="14" y="5" width="4" height="14"/>
+  </svg>`;
+}
+
 function localPosterPath(src) {
   const filename = src.split('/').pop().replace(/\.[^.]+$/, '');
   return `media/posters/${filename}.jpg`;
@@ -47,7 +59,6 @@ const videoObserver = 'IntersectionObserver' in window
             video.src = video.dataset.src;
             video.preload = 'metadata';
           }
-          video.play().catch(() => {});
         } else {
           video.pause();
         }
@@ -136,29 +147,47 @@ function renderVideos(items, track, isReels) {
     video.dataset.src = item.src;
     video.poster = item.poster || localPosterPath(item.src);
     video.preload = 'none';
-    video.muted = true;
-    video.loop = true;
+    video.muted = false;
     video.playsInline = true;
     if (item.fit === 'contain') video.classList.add('contain-video');
-    const overlay = document.createElement('div');
+    const overlay = document.createElement('button');
     overlay.className = 'mute-overlay';
-    overlay.innerHTML = mutedIcon();
+    overlay.type = 'button';
+    overlay.setAttribute('aria-label', `Play ${item.title || 'video'}`);
+    overlay.innerHTML = playIcon();
     card.append(video, overlay);
-    card.addEventListener('click', () => {
+    const ensureVideoLoaded = () => {
       if (!video.src) {
         video.src = video.dataset.src;
         video.preload = 'metadata';
       }
-      video.muted = !video.muted;
-      overlay.innerHTML = video.muted ? mutedIcon() : unmutedIcon();
-      video.play().catch(() => {});
+    };
+    const stopVideo = () => {
+      video.pause();
+      video.currentTime = 0;
+      video.load();
+      overlay.innerHTML = playIcon();
+      overlay.setAttribute('aria-label', `Play ${item.title || 'video'}`);
+    };
+    overlay.addEventListener('click', event => {
+      event.stopPropagation();
+      ensureVideoLoaded();
+      if (video.paused) {
+        video.play().catch(() => {});
+      } else {
+        stopVideo();
+      }
     });
+    video.addEventListener('play', () => {
+      overlay.innerHTML = pauseIcon();
+      overlay.setAttribute('aria-label', `Stop ${item.title || 'video'}`);
+    });
+    video.addEventListener('ended', stopVideo);
     track.appendChild(card);
     if (videoObserver) videoObserver.observe(video);
     else {
       video.src = video.dataset.src;
       video.preload = 'metadata';
-      video.play().catch(() => {});
     }
   });
 }
