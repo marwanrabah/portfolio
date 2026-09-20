@@ -30,7 +30,7 @@ window.SITE_CONTENT = {
       id: 'work', title: 'Work', type: 'videos', enabled: true,
       items: [
         { embed: 'vimeo', id: '1219228625', title: 'Vimeo work video' },
-        { src: 'media/work/work-instagram-DbGvmKbIYNr.mp4', title: 'Instagram work video' },
+        { src: 'media/work/work-instagram-DbGvmKbIYNr.mp4', title: 'Instagram work video', fit: 'contain' },
         { src: 'media/work/video6.mp4', title: 'Work video 6' },
         { src: 'media/work/video1.mp4', title: 'Work video 1' },
         { src: 'media/work/video2.mp4', title: 'Work video 2' },

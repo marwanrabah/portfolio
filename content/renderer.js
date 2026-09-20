@@ -31,6 +31,25 @@ function unmutedIcon() {
   </svg>`;
 }
 
+// Load local videos shortly before they enter the viewport instead of
+// downloading every video when the page first opens.
+const videoObserver = 'IntersectionObserver' in window
+  ? new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        const video = entry.target;
+        if (entry.isIntersecting) {
+          if (!video.src) {
+            video.src = video.dataset.src;
+            video.preload = 'metadata';
+          }
+          video.play().catch(() => {});
+        } else {
+          video.pause();
+        }
+      });
+    }, { rootMargin: '320px 0px' })
+  : null;
+
 function addDragToScroll(wrap) {
   let isDown = false;
   let startX = 0;
@@ -109,20 +128,32 @@ function renderVideos(items, track, isReels) {
     card.className = `video-card${isReels ? ' reel-card' : ''}`;
     card.title = item.title || '';
     const video = document.createElement('video');
-    video.src = item.src;
-    video.autoplay = true;
+    video.dataset.src = item.src;
+    video.preload = 'none';
     video.muted = true;
     video.loop = true;
     video.playsInline = true;
+    if (item.fit === 'contain') video.classList.add('contain-video');
     const overlay = document.createElement('div');
     overlay.className = 'mute-overlay';
     overlay.innerHTML = mutedIcon();
     card.append(video, overlay);
     card.addEventListener('click', () => {
+      if (!video.src) {
+        video.src = video.dataset.src;
+        video.preload = 'metadata';
+      }
       video.muted = !video.muted;
       overlay.innerHTML = video.muted ? mutedIcon() : unmutedIcon();
+      video.play().catch(() => {});
     });
     track.appendChild(card);
+    if (videoObserver) videoObserver.observe(video);
+    else {
+      video.src = video.dataset.src;
+      video.preload = 'metadata';
+      video.play().catch(() => {});
+    }
   });
 }
 
@@ -135,6 +166,7 @@ function renderYoutube(items, track) {
     iframe.src = `https://www.youtube-nocookie.com/embed/${item.id}?autoplay=1&mute=1&loop=1&playlist=${item.id}`;
     iframe.allow = 'autoplay; encrypted-media; picture-in-picture';
     iframe.allowFullscreen = true;
+    iframe.loading = 'lazy';
     card.appendChild(iframe);
     track.appendChild(card);
   });
@@ -148,6 +180,7 @@ function renderVimeo(items, track) {
     const iframe = document.createElement('iframe');
     iframe.src = `https://player.vimeo.com/video/${item.id}?autoplay=1&muted=1&loop=1&background=1`;
     iframe.allow = 'autoplay; fullscreen';
+    iframe.loading = 'lazy';
     const muteButton = document.createElement('div');
     muteButton.className = 'mute-overlay';
     muteButton.innerHTML = mutedIcon();
