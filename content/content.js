@@ -37,6 +37,8 @@ window.SITE_CONTENT = {
         { src: 'media/work/video3.mp4', title: 'Work video 3' },
         { src: 'media/work/video4.mp4', title: 'Work video 4' },
         { src: 'media/work/video5.mp4', title: 'Work video 5' },
+        { src: 'media/reels/klZoxaOZhaU.mp4', title: 'Reel 7' },
+        { src: 'media/reels/L6TfvP04u1g.mp4', title: 'Reel 2' },
       ],
     },
     {
@@ -66,12 +68,10 @@ window.SITE_CONTENT = {
       id: 'reels', title: 'Reels', type: 'videos', layout: 'reels', enabled: true,
       items: [
         { src: 'media/reels/Ay-zXQJEMwg.mp4', title: 'Reel 1' },
-        { src: 'media/reels/L6TfvP04u1g.mp4', title: 'Reel 2' },
         { src: 'media/reels/N5ee7UZBs9E.mp4', title: 'Reel 3' },
         { src: 'media/reels/XRS-mJe7aXM.mp4', title: 'Reel 4' },
         { src: 'media/reels/XVfvGTBCNtM.mp4', title: 'Reel 5' },
         { src: 'media/reels/b6xBVmn9Jek.mp4', title: 'Reel 6' },
-        { src: 'media/reels/klZoxaOZhaU.mp4', title: 'Reel 7' },
         { src: 'media/reels/mJMwnw6rWGg.mp4', title: 'Reel 8' },
         { src: 'media/reels/s7C0h1_36n0.mp4', title: 'Reel 9' },
         { src: 'media/reels/xiNh6f_ogVA.mp4', title: 'Reel 10' },
