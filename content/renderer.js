@@ -198,7 +198,6 @@ function renderYoutube(items, track) {
     card.className = 'video-card';
     card.title = item.title || '';
     const iframe = document.createElement('iframe');
-    iframe.src = `https://www.youtube-nocookie.com/embed/${item.id}?autoplay=1&mute=1&loop=1&playlist=${item.id}`;
     iframe.allow = 'autoplay; encrypted-media; picture-in-picture';
     iframe.allowFullscreen = true;
     iframe.loading = 'lazy';
@@ -206,8 +205,28 @@ function renderYoutube(items, track) {
     poster.className = 'video-poster';
     poster.src = item.poster || `https://i.ytimg.com/vi/${item.id}/hqdefault.jpg`;
     poster.alt = item.title || 'Video thumbnail';
-    iframe.addEventListener('load', () => poster.remove());
-    card.append(poster, iframe);
+    const control = document.createElement('button');
+    control.className = 'mute-overlay';
+    control.type = 'button';
+    control.setAttribute('aria-label', `Play ${item.title || 'video'}`);
+    control.innerHTML = playIcon();
+    let started = false;
+    control.addEventListener('click', () => {
+      if (!started) {
+        iframe.src = `https://www.youtube-nocookie.com/embed/${item.id}?autoplay=1&mute=0&loop=1&playlist=${item.id}`;
+        poster.style.display = 'none';
+        control.innerHTML = pauseIcon();
+        control.setAttribute('aria-label', `Stop ${item.title || 'video'}`);
+        started = true;
+      } else {
+        iframe.src = 'about:blank';
+        poster.style.display = 'block';
+        control.innerHTML = playIcon();
+        control.setAttribute('aria-label', `Play ${item.title || 'video'}`);
+        started = false;
+      }
+    });
+    card.append(poster, iframe, control);
     track.appendChild(card);
   });
 }
@@ -218,27 +237,34 @@ function renderVimeo(items, track) {
     card.className = 'video-card';
     card.title = item.title || '';
     const iframe = document.createElement('iframe');
-    iframe.src = `https://player.vimeo.com/video/${item.id}?autoplay=1&muted=1&loop=1&background=1`;
     iframe.allow = 'autoplay; fullscreen';
     iframe.loading = 'lazy';
     const poster = document.createElement('img');
     poster.className = 'video-poster';
     poster.src = item.poster || `https://vumbnail.com/${item.id}.jpg`;
     poster.alt = item.title || 'Video thumbnail';
-    iframe.addEventListener('load', () => poster.remove());
-    const muteButton = document.createElement('div');
-    muteButton.className = 'mute-overlay';
-    muteButton.innerHTML = mutedIcon();
-    card.append(poster, iframe, muteButton);
-    let muted = true;
-    const player = new Vimeo.Player(iframe);
-    card.addEventListener('click', () => {
-      muted = !muted;
-      player.setMuted(muted);
-      muteButton.innerHTML = muted ? mutedIcon() : unmutedIcon();
+    const control = document.createElement('button');
+    control.className = 'mute-overlay';
+    control.type = 'button';
+    control.setAttribute('aria-label', `Play ${item.title || 'video'}`);
+    control.innerHTML = playIcon();
+    let started = false;
+    control.addEventListener('click', () => {
+      if (!started) {
+        iframe.src = `https://player.vimeo.com/video/${item.id}?autoplay=1&muted=0&loop=1&background=1`;
+        poster.style.display = 'none';
+        control.innerHTML = pauseIcon();
+        control.setAttribute('aria-label', `Stop ${item.title || 'video'}`);
+        started = true;
+      } else {
+        iframe.src = 'about:blank';
+        poster.style.display = 'block';
+        control.innerHTML = playIcon();
+        control.setAttribute('aria-label', `Play ${item.title || 'video'}`);
+        started = false;
+      }
     });
-    card.addEventListener('mouseenter', () => { muteButton.style.opacity = '1'; });
-    card.addEventListener('mouseleave', () => { muteButton.style.opacity = '0.5'; });
+    card.append(poster, iframe, control);
     track.appendChild(card);
   });
 }
