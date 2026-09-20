@@ -22,14 +22,20 @@
       --accent: #e8e8e8;
     }
 
-    html { scroll-behavior: smooth; }
+    html {
+      scroll-behavior: smooth;
+      overflow-x: hidden;
+      overscroll-behavior-x: none;
+    }
 
     body {
       background: var(--bg);
       color: var(--text);
       font-family: 'Space Grotesk', sans-serif;
       font-weight: 300;
+      width: 100%;
       overflow-x: hidden;
+      overscroll-behavior-x: none;
     }
 
     /* ── HERO ─────────────────────────────────────── */
@@ -141,6 +147,7 @@
       overflow-x: auto;
       overflow-y: hidden;
       padding: 0 40px 40px;
+      overscroll-behavior-x: contain;
       scrollbar-width: none;
       -ms-overflow-style: none;
     }
