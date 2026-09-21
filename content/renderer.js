@@ -28,6 +28,7 @@ let viewerPlay = null;
 let viewerSound = null;
 let viewerTitle = null;
 let viewerCounter = null;
+let viewerMuted = false;
 
 const emit = (name, detail = {}) => {
   window.dispatchEvent(new CustomEvent(`portfolio:${name}`, { detail }));
@@ -453,6 +454,46 @@ function createShell(section) {
 
 function preloadImage(src) { if (src) { const image = new Image(); image.src = src; } }
 
+function setViewerLoading(loading) {
+  viewerMedia?.classList.toggle('is-loading', loading);
+}
+
+function setViewerPlayState(playing) {
+  if (!viewerPlay) return;
+  viewerPlay.innerHTML = playing ? icon.pause : icon.play;
+  viewerPlay.setAttribute('aria-label', `${playing ? 'Pause' : 'Play'} media`);
+}
+
+function playViewerVideo(media, request) {
+  if (!media || request !== viewerMedia?._request) return;
+  setViewerLoading(true);
+  const finish = () => {
+    if (request !== viewerMedia?._request) return;
+    setViewerLoading(false);
+    setViewerPlayState(true);
+  };
+  media.addEventListener('playing', finish, { once: true });
+  media.addEventListener('error', () => {
+    if (request !== viewerMedia?._request) return;
+    setViewerLoading(false);
+    setViewerPlayState(false);
+  }, { once: true });
+  safePlay(media).then(ok => {
+    if (ok || request !== viewerMedia?._request) return ok;
+    // Sound autoplay can be blocked. Keep the viewer usable and let the user
+    // turn sound on from the dedicated sound control.
+    media.muted = true;
+    viewerMedia._muted = true;
+    updateSoundButton(viewerSound, true);
+    return safePlay(media);
+  }).then(ok => {
+    if (!ok && request === viewerMedia?._request) {
+      setViewerLoading(false);
+      setViewerPlayState(false);
+    }
+  });
+}
+
 function renderProjects(projects, grid) {
   projects.forEach(project => {
     const wrapper = document.createElement('div');
@@ -495,6 +536,7 @@ function renderSection(section) {
 function openViewer(record, index = null) {
   if (!SETTINGS.viewerEnabled || !viewer || !record) return;
   mediaRecords.forEach(other => stopRecord(other));
+  viewerMuted = false;
   const records = sectionRecords.get(record.section.id) || [record];
   viewerRecord = record; viewerIndex = index === null ? records.indexOf(record) : index;
   if (!viewerHistoryState) { history.pushState({ portfolioViewer: true }, '', window.location.href); viewerHistoryState = true; }
@@ -506,14 +548,35 @@ function renderViewer(records) {
   const record = records[viewerIndex] || records[0]; if (!record) return; viewerRecord = record;
   mediaRecords.forEach(other => stopRecord(other));
   viewerMedia?._media?.pause?.();
+  const request = (viewerMedia._request || 0) + 1;
+  viewerMedia._request = request;
+  setViewerLoading(true);
   viewerTitle.textContent = record.item.title || record.section.title;
   viewerCounter.textContent = `${String(viewerIndex + 1).padStart(2, '0')} / ${String(records.length).padStart(2, '0')}`;
   viewerMedia.replaceChildren();
   const item = record.item; let media;
-  if (item.src) { media = document.createElement('video'); media.src = item.src; media.poster = getPoster(item); media.playsInline = true; media.loop = item.loop !== false; media.className = item.fit === 'contain' ? 'contain-video' : ''; }
-  else { media = document.createElement('iframe'); media.allow = 'autoplay; fullscreen; picture-in-picture'; media.allowFullscreen = true; media.title = item.title || 'Video'; media.src = item.embed === 'youtube' ? `https://www.youtube-nocookie.com/embed/${item.id}?autoplay=1&mute=${soundPreference === 'unmuted' ? 0 : 1}&loop=1&playlist=${item.id}` : `https://player.vimeo.com/video/${item.id}?autoplay=1&muted=${soundPreference === 'unmuted' ? 0 : 1}&loop=1&background=1`; }
+  if (item.src) {
+    media = document.createElement('video');
+    media.src = item.src;
+    media.poster = getPoster(item);
+    media.preload = 'metadata';
+    media.playsInline = true;
+    media.loop = item.loop !== false;
+    media.className = item.fit === 'contain' ? 'contain-video' : '';
+  } else {
+    media = document.createElement('iframe');
+    media.allow = 'autoplay; fullscreen; picture-in-picture';
+    media.allowFullscreen = true;
+    media.loading = 'eager';
+    media.title = item.title || 'Video';
+    media.addEventListener('load', () => { if (request === viewerMedia._request) setViewerLoading(false); }, { once: true });
+    window.setTimeout(() => { if (request === viewerMedia._request) setViewerLoading(false); }, 12000);
+    media.src = item.embed === 'youtube'
+      ? `https://www.youtube-nocookie.com/embed/${item.id}?autoplay=1&mute=${viewerMuted ? 1 : 0}&loop=1&playlist=${item.id}&playsinline=1`
+      : `https://player.vimeo.com/video/${item.id}?autoplay=1&muted=${viewerMuted ? 1 : 0}&loop=1&background=1&playsinline=1`;
+  }
   viewerMedia.appendChild(media);
-  viewerMedia._media = media; viewerMedia._muted = soundPreference !== 'unmuted'; viewerMedia._playing = true;
+  viewerMedia._media = media; viewerMedia._muted = viewerMuted; viewerMedia._playing = true;
   if (!localStorage.getItem('portfolio:viewer-hint-seen')) {
     const hint = document.createElement('div');
     hint.className = 'viewer-hint';
@@ -522,9 +585,17 @@ function renderViewer(records) {
     window.setTimeout(() => hint.classList.add('is-hidden'), 2400);
     localStorage.setItem('portfolio:viewer-hint-seen', '1');
   }
-  viewerPlay.innerHTML = icon.pause; viewerPlay.setAttribute('aria-label', `Pause ${record.item.title || 'video'}`); updateSoundButton(viewerSound, viewerMedia._muted);
-  if (item.src) { media.muted = viewerMedia._muted; safePlay(media); media.addEventListener('pause', () => { viewerPlay.innerHTML = icon.play; viewerPlay.setAttribute('aria-label', `Play ${record.item.title || 'video'}`); }); }
-  preloadImage(getPoster(records[(viewerIndex + 1) % records.length]?.item || {})); preloadImage(getPoster(records[(viewerIndex - 1 + records.length) % records.length]?.item || {}));
+  setViewerPlayState(true); updateSoundButton(viewerSound, viewerMedia._muted);
+  if (item.src) {
+    media.muted = viewerMedia._muted;
+    media.addEventListener('pause', () => { if (request === viewerMedia._request) setViewerPlayState(false); });
+    media.addEventListener('waiting', () => { if (request === viewerMedia._request) setViewerLoading(true); });
+    playViewerVideo(media, request);
+  }
+  if (!saveData) {
+    preloadImage(getPoster(records[(viewerIndex + 1) % records.length]?.item || {}));
+    preloadImage(getPoster(records[(viewerIndex - 1 + records.length) % records.length]?.item || {}));
+  }
 }
 
 function closeViewer(fromPopState = false) {
@@ -548,8 +619,8 @@ function setupViewer() {
     const media = viewerMedia._media;
     if (!media) return;
     if (media.tagName === 'VIDEO') {
-      if (media.paused) { safePlay(media); viewerPlay.innerHTML = icon.pause; }
-      else { media.pause(); viewerPlay.innerHTML = icon.play; }
+      if (media.paused) { playViewerVideo(media, viewerMedia._request); }
+      else { media.pause(); setViewerPlayState(false); }
       return;
     }
     if (viewerMedia._playing) {
@@ -565,6 +636,7 @@ function setupViewer() {
     const media = viewerMedia._media;
     const muted = !viewerMedia._muted;
     viewerMedia._muted = muted;
+    viewerMuted = muted;
     setSoundPreference(muted ? 'muted' : 'unmuted');
     if (media?.tagName === 'VIDEO') {
       media.muted = muted;
