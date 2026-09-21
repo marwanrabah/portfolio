@@ -420,26 +420,37 @@
 
     .video-card.is-loading .media-controls { opacity: 0.55; }
 
-    .media-caption {
-      position: absolute;
-      right: 150px;
-      bottom: 17px;
-      left: 12px;
-      z-index: 4;
-      overflow: hidden;
-      color: rgba(255,255,255,0.78);
-      font-family: 'Space Mono', monospace;
-      font-size: 9px;
-      letter-spacing: 0.1em;
-      text-overflow: ellipsis;
-      text-transform: uppercase;
-      white-space: nowrap;
-      pointer-events: none;
-      text-shadow: 0 1px 8px #000;
-    }
-
     @keyframes media-spin {
       to { transform: translate(-50%, -50%) rotate(360deg); }
+    }
+
+    .play-feedback {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 54px;
+      height: 54px;
+      z-index: 5;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid rgba(255,255,255,0.5);
+      border-radius: 50%;
+      background: rgba(4,4,4,0.68);
+      color: #fff;
+      opacity: 0;
+      transform: translate(-50%, -50%) scale(0.78);
+      pointer-events: none;
+    }
+
+    .play-feedback svg { width: 20px; height: 20px; fill: currentColor; stroke: currentColor; stroke-width: 2; }
+    .play-feedback.is-visible { animation: playback-feedback 0.72s ease-out both; }
+
+    @keyframes playback-feedback {
+      0% { opacity: 0; transform: translate(-50%, -50%) scale(0.78); }
+      18% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+      72% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+      100% { opacity: 0; transform: translate(-50%, -50%) scale(1.06); }
     }
 
     .media-controls {
@@ -481,9 +492,6 @@
 
     .media-controls button:hover,
     .media-controls button:focus-visible { background: rgba(255,255,255,0.12); opacity: 1; }
-    .media-controls .media-play { width: 40px; min-width: 40px; height: 40px; background: var(--text); color: var(--bg); opacity: 1; }
-    .media-controls .media-play:hover,
-    .media-controls .media-play:focus-visible { background: #fff; }
     .media-controls svg { width: 14px; height: 14px; fill: currentColor; stroke: currentColor; stroke-width: 2; }
     .media-controls button::after {
       content: attr(data-label);
@@ -566,7 +574,7 @@
     .media-viewer::backdrop { background: rgba(0,0,0,0.88); }
     .viewer-shell { width: 100%; height: 100%; display: grid; grid-template-rows: auto 1fr auto; gap: 14px; }
     .viewer-header, .viewer-footer { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
-    .viewer-title { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-family: 'Space Mono', monospace; font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--muted); }
+    .viewer-title { display: none; }
     .viewer-counter { margin-left: auto; color: rgba(255,255,255,0.45); font-family: 'Space Mono', monospace; font-size: 9px; letter-spacing: 0.12em; }
     .viewer-media { position: relative; min-height: 0; display: flex; align-items: center; justify-content: center; background: #000; overflow: hidden; touch-action: pan-y; }
     .viewer-media video, .viewer-media iframe { width: 100%; height: 100%; border: 0; object-fit: contain; background: #000; }
@@ -587,6 +595,7 @@
       html { scroll-behavior: auto; }
       .section-reveal, .project-card img, .media-controls, .media-progress { transition: none; }
       .video-card.is-loading::before { animation: none; }
+      .play-feedback.is-visible { animation: none; opacity: 1; transform: translate(-50%, -50%); }
     }
 
     @media (max-width: 640px) {
@@ -596,7 +605,6 @@
       footer { padding: 20px; flex-direction: column; gap: 8px; }
       .video-card { width: min(340px, calc(100vw - 40px)); }
       .video-card.reel-card { width: min(260px, calc(100vw - 56px)); }
-      .media-caption { right: 132px; max-width: 42%; }
       .media-viewer { width: 100vw; height: 100dvh; padding: max(12px, env(safe-area-inset-top)) 12px max(12px, env(safe-area-inset-bottom)); border: 0; }
       .viewer-counter { margin-left: 0; }
       .end-cta { padding: 44px 20px 52px; }

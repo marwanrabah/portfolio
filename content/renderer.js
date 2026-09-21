@@ -64,12 +64,15 @@ function updateSoundButton(button, muted) {
   button.title = muted ? 'Turn sound on' : 'Turn sound off';
 }
 
-function updatePlayButton(button, playing, title) {
-  if (!button) return;
-  button.innerHTML = playing ? icon.pause : icon.play;
-  button.setAttribute('aria-label', `${playing ? 'Pause' : 'Play'} ${title || 'video'}`);
-  button.dataset.label = playing ? 'Pause' : 'Play';
-  button.title = `${playing ? 'Pause' : 'Play'} video`;
+function showPlaybackFeedback(card, playing) {
+  const feedback = card?.querySelector('.play-feedback');
+  if (!feedback) return;
+  feedback.innerHTML = playing ? icon.pause : icon.play;
+  feedback.classList.remove('is-visible');
+  void feedback.offsetWidth;
+  feedback.classList.add('is-visible');
+  clearTimeout(feedback._timer);
+  feedback._timer = window.setTimeout(() => feedback.classList.remove('is-visible'), 720);
 }
 
 function safePlay(media) {
@@ -99,9 +102,10 @@ function setLoading(card, loading) {
   card.setAttribute('aria-busy', String(loading));
 }
 
-function stopRecord(record, reset = false) {
+function stopRecord(record, reset = false, feedback = false) {
   if (!record) return;
   record.stop?.(reset);
+  if (feedback) showPlaybackFeedback(record.card, false);
   if (record === activeRecord) {
     activeRecord = null;
     emit('media-stop', { title: record.item.title, section: record.section.id });
@@ -114,7 +118,7 @@ function stopOtherMedia(record) {
   });
 }
 
-function activateRecord(record, { autoplay = false } = {}) {
+function activateRecord(record, { autoplay = false, feedback = false } = {}) {
   if (!record) return;
   if (viewer?.open) return;
   stopOtherMedia(record);
@@ -122,7 +126,7 @@ function activateRecord(record, { autoplay = false } = {}) {
   record.load?.();
   const muted = autoplay ? true : soundPreference !== 'unmuted';
   record.setMuted?.(muted);
-  record.play?.({ muted });
+  record.play?.({ muted, feedback });
   emit('media-start', { title: record.item.title, section: record.section.id, autoplay });
 }
 
@@ -151,7 +155,6 @@ function createLocalRecord(item, section, isReel, track) {
   if (item.fit === 'contain') video.classList.add('contain-video');
   const controls = document.createElement('div');
   controls.className = 'media-controls';
-  const playButton = createButton('media-play', `Play ${item.title || 'video'}`, icon.play);
   const soundButton = createButton('media-sound', 'Turn sound on', icon.mute);
   const expandButton = createButton('media-expand', 'Open in focused viewer', icon.expand);
   const progress = document.createElement('input');
@@ -164,23 +167,22 @@ function createLocalRecord(item, section, isReel, track) {
   progress.setAttribute('aria-label', `Seek ${item.title || 'video'}`);
   progress.title = 'Seek video';
   updateSoundButton(soundButton, true);
-  const caption = document.createElement('div');
-  caption.className = 'media-caption';
-  caption.textContent = item.title || 'Video';
-  caption.title = item.title || 'Video';
+  const feedback = document.createElement('div');
+  feedback.className = 'play-feedback';
+  feedback.setAttribute('aria-hidden', 'true');
   expandButton.dataset.label = 'Open';
   expandButton.title = 'Open media viewer';
-  controls.append(soundButton, playButton, expandButton);
+  controls.append(soundButton, expandButton);
   const error = document.createElement('div');
   error.className = 'media-error';
   error.textContent = 'Media unavailable · tap to retry';
   error.hidden = true;
-  card.append(video, progress, caption, controls, error);
+  card.append(video, progress, feedback, controls, error);
   track.appendChild(card);
   let playToken = 0;
 
   const record = {
-    item, section, card, video, playButton, soundButton, expandButton, progress,
+    item, section, card, video, soundButton, expandButton, progress,
     load() {
       if (!video.src) {
         video.src = item.src;
@@ -188,16 +190,16 @@ function createLocalRecord(item, section, isReel, track) {
       }
       error.hidden = true;
     },
-    play({ muted = true } = {}) {
+    play({ muted = true, feedback: showFeedback = false } = {}) {
       const request = ++playToken;
       video.muted = muted;
       setLoading(card, true);
+      if (showFeedback) showPlaybackFeedback(card, true);
       safePlay(video).then(ok => {
         if (request !== playToken) return;
         if (!ok) {
           setLoading(card, false);
           card.classList.remove('is-playing');
-          updatePlayButton(playButton, false, item.title);
         }
       });
     },
@@ -207,18 +209,12 @@ function createLocalRecord(item, section, isReel, track) {
       setLoading(card, false);
       if (reset) video.currentTime = 0;
       card.classList.remove('is-playing');
-      updatePlayButton(playButton, false, item.title);
     },
     setMuted(muted) { video.muted = muted; updateSoundButton(soundButton, muted); },
     isMuted: () => video.muted,
     isPlaying: () => !video.paused || card.classList.contains('is-loading'),
   };
 
-  playButton.addEventListener('click', event => {
-    event.stopPropagation();
-    if (record.isPlaying()) stopRecord(record);
-    else activateRecord(record);
-  });
   soundButton.addEventListener('click', event => { event.stopPropagation(); toggleRecordSound(record); });
   expandButton.addEventListener('click', event => { event.stopPropagation(); openViewer(record); });
   progress.addEventListener('pointerdown', event => event.stopPropagation());
@@ -230,23 +226,22 @@ function createLocalRecord(item, section, isReel, track) {
     }
   });
   card.addEventListener('click', () => {
-    if (record.isPlaying()) stopRecord(record);
-    else activateRecord(record);
+    if (record.isPlaying()) stopRecord(record, false, true);
+    else activateRecord(record, { feedback: true });
   });
   card.addEventListener('keydown', event => {
     if (event.key === 'Enter' || event.key === ' ') {
       event.preventDefault();
-      if (record.isPlaying()) stopRecord(record);
-      else activateRecord(record);
+      if (record.isPlaying()) stopRecord(record, false, true);
+      else activateRecord(record, { feedback: true });
     }
   });
   video.addEventListener('play', () => {
     stopOtherMedia(record);
     activeRecord = record;
     card.classList.add('is-playing');
-    updatePlayButton(playButton, true, item.title);
   });
-  video.addEventListener('pause', () => { card.classList.remove('is-playing'); updatePlayButton(playButton, false, item.title); });
+  video.addEventListener('pause', () => { card.classList.remove('is-playing'); });
   video.addEventListener('playing', () => setLoading(card, false));
   video.addEventListener('waiting', () => setLoading(card, true));
   video.addEventListener('canplay', () => { if (!video.paused) setLoading(card, false); });
@@ -274,18 +269,16 @@ function createRemoteRecord(item, section, isReel, track) {
   poster.loading = 'lazy';
   const controls = document.createElement('div');
   controls.className = 'media-controls';
-  const playButton = createButton('media-play', `Play ${item.title || 'video'}`, icon.play);
   const soundButton = createButton('media-sound', 'Turn sound on', icon.mute);
   const expandButton = createButton('media-expand', 'Open in focused viewer', icon.expand);
   updateSoundButton(soundButton, true);
-  const caption = document.createElement('div');
-  caption.className = 'media-caption';
-  caption.textContent = item.title || 'Video';
-  caption.title = item.title || 'Video';
+  const feedback = document.createElement('div');
+  feedback.className = 'play-feedback';
+  feedback.setAttribute('aria-hidden', 'true');
   expandButton.dataset.label = 'Open';
   expandButton.title = 'Open media viewer';
-  controls.append(soundButton, playButton, expandButton);
-  card.append(poster, caption, controls);
+  controls.append(soundButton, expandButton);
+  card.append(poster, feedback, controls);
   track.appendChild(card);
   let iframe = null;
   let player = null;
@@ -301,12 +294,13 @@ function createRemoteRecord(item, section, isReel, track) {
   };
 
   const record = {
-    item, section, card, playButton, soundButton, expandButton,
+    item, section, card, soundButton, expandButton,
     load() {},
-    async play({ muted: nextMuted = true } = {}) {
+    async play({ muted: nextMuted = true, feedback: showFeedback = false } = {}) {
       const request = ++playToken;
       muted = nextMuted;
       setLoading(card, true);
+      if (showFeedback) showPlaybackFeedback(card, true);
       if (!iframe) {
         iframe = document.createElement('iframe');
         iframe.allow = 'autoplay; fullscreen; picture-in-picture';
@@ -332,7 +326,6 @@ function createRemoteRecord(item, section, isReel, track) {
       }
       playing = true;
       card.classList.add('is-playing');
-      updatePlayButton(playButton, true, item.title);
       updateSoundButton(soundButton, muted);
     },
     stop() {
@@ -346,7 +339,6 @@ function createRemoteRecord(item, section, isReel, track) {
       playing = false;
       poster.hidden = false;
       card.classList.remove('is-playing');
-      updatePlayButton(playButton, false, item.title);
       updateSoundButton(soundButton, true);
     },
     setMuted(nextMuted) {
@@ -360,11 +352,10 @@ function createRemoteRecord(item, section, isReel, track) {
     isMuted: () => muted,
     isPlaying: () => playing,
   };
-  playButton.addEventListener('click', event => { event.stopPropagation(); if (record.isPlaying()) stopRecord(record); else activateRecord(record); });
   soundButton.addEventListener('click', event => { event.stopPropagation(); toggleRecordSound(record); });
   expandButton.addEventListener('click', event => { event.stopPropagation(); openViewer(record); });
-  card.addEventListener('click', () => { if (record.isPlaying()) stopRecord(record); else activateRecord(record); });
-  card.addEventListener('keydown', event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); if (record.isPlaying()) stopRecord(record); else activateRecord(record); } });
+  card.addEventListener('click', () => { if (record.isPlaying()) stopRecord(record, false, true); else activateRecord(record, { feedback: true }); });
+  card.addEventListener('keydown', event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); if (record.isPlaying()) stopRecord(record, false, true); else activateRecord(record, { feedback: true }); } });
   mediaRecords.push(record);
   return record;
 }
