@@ -93,6 +93,11 @@ function createButton(className, label, content) {
   return button;
 }
 
+function setLoading(card, loading) {
+  card.classList.toggle('is-loading', loading);
+  card.setAttribute('aria-busy', String(loading));
+}
+
 function stopRecord(record, reset = false) {
   if (!record) return;
   record.stop?.(reset);
@@ -167,6 +172,7 @@ function createLocalRecord(item, section, isReel, track) {
   error.hidden = true;
   card.append(video, progress, controls, error);
   track.appendChild(card);
+  let playToken = 0;
 
   const record = {
     item, section, card, video, playButton, soundButton, expandButton, progress,
@@ -178,23 +184,29 @@ function createLocalRecord(item, section, isReel, track) {
       error.hidden = true;
     },
     play({ muted = true } = {}) {
+      const request = ++playToken;
       video.muted = muted;
+      setLoading(card, true);
       safePlay(video).then(ok => {
+        if (request !== playToken) return;
         if (!ok) {
+          setLoading(card, false);
           card.classList.remove('is-playing');
           updatePlayButton(playButton, false, item.title);
         }
       });
     },
     stop(reset = false) {
+      playToken += 1;
       video.pause();
+      setLoading(card, false);
       if (reset) video.currentTime = 0;
       card.classList.remove('is-playing');
       updatePlayButton(playButton, false, item.title);
     },
     setMuted(muted) { video.muted = muted; updateSoundButton(soundButton, muted); },
     isMuted: () => video.muted,
-    isPlaying: () => !video.paused,
+    isPlaying: () => !video.paused || card.classList.contains('is-loading'),
   };
 
   playButton.addEventListener('click', event => {
@@ -230,6 +242,9 @@ function createLocalRecord(item, section, isReel, track) {
     updatePlayButton(playButton, true, item.title);
   });
   video.addEventListener('pause', () => { card.classList.remove('is-playing'); updatePlayButton(playButton, false, item.title); });
+  video.addEventListener('playing', () => setLoading(card, false));
+  video.addEventListener('waiting', () => setLoading(card, true));
+  video.addEventListener('canplay', () => { if (!video.paused) setLoading(card, false); });
   video.addEventListener('loadedmetadata', () => { progress.disabled = !Number.isFinite(video.duration); });
   video.addEventListener('timeupdate', () => {
     if (Number.isFinite(video.duration) && video.duration > 0 && document.activeElement !== progress) {
@@ -237,7 +252,7 @@ function createLocalRecord(item, section, isReel, track) {
     }
   });
   video.addEventListener('ended', () => stopRecord(record, true));
-  video.addEventListener('error', () => { error.hidden = false; });
+  video.addEventListener('error', () => { setLoading(card, false); error.hidden = false; });
   mediaRecords.push(record);
   return record;
 }
@@ -267,12 +282,22 @@ function createRemoteRecord(item, section, isReel, track) {
   let player = null;
   let playing = false;
   let muted = true;
+  let playToken = 0;
+  let loadingTimer = null;
+
+  const clearRemoteLoading = request => {
+    if (request !== playToken) return;
+    clearTimeout(loadingTimer);
+    setLoading(card, false);
+  };
 
   const record = {
     item, section, card, playButton, soundButton, expandButton,
     load() {},
     async play({ muted: nextMuted = true } = {}) {
+      const request = ++playToken;
       muted = nextMuted;
+      setLoading(card, true);
       if (!iframe) {
         iframe = document.createElement('iframe');
         iframe.allow = 'autoplay; fullscreen; picture-in-picture';
@@ -284,6 +309,8 @@ function createRemoteRecord(item, section, isReel, track) {
           ? `https://www.youtube-nocookie.com/embed/${item.id}?autoplay=1&mute=${muted ? 1 : 0}&loop=1&playlist=${item.id}`
           : `https://player.vimeo.com/video/${item.id}?autoplay=1&muted=${muted ? 1 : 0}&loop=1&background=1`;
         card.insertBefore(iframe, controls);
+        iframe.addEventListener('load', () => clearRemoteLoading(request), { once: true });
+        loadingTimer = window.setTimeout(() => clearRemoteLoading(request), 8000);
         poster.hidden = true;
         if (item.embed === 'vimeo' && window.Vimeo?.Player) {
           player = new window.Vimeo.Player(iframe);
@@ -292,6 +319,7 @@ function createRemoteRecord(item, section, isReel, track) {
       } else if (player) {
         await player.setMuted(muted).catch(() => {});
         await player.play().catch(() => {});
+        clearRemoteLoading(request);
       }
       playing = true;
       card.classList.add('is-playing');
@@ -299,6 +327,9 @@ function createRemoteRecord(item, section, isReel, track) {
       updateSoundButton(soundButton, muted);
     },
     stop() {
+      playToken += 1;
+      clearTimeout(loadingTimer);
+      setLoading(card, false);
       if (player) player.pause().catch(() => {});
       if (iframe) iframe.src = 'about:blank';
       iframe = null;
