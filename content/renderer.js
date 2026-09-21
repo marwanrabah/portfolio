@@ -372,7 +372,8 @@ function renderMediaItem(item, section, isReel, track) {
     return null;
   }
   if (item.src) return createLocalRecord(item, section, isReel, track);
-  if (item.embed === 'youtube' || item.embed === 'vimeo') return createRemoteRecord(item, section, isReel, track);
+  const embed = item.embed || (section.type === 'vimeo' ? 'vimeo' : '');
+  if (embed === 'youtube' || embed === 'vimeo') return createRemoteRecord({ ...item, embed }, section, isReel, track);
   return null;
 }
 
