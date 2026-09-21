@@ -27,6 +27,7 @@ let viewerMedia = null;
 let viewerPlay = null;
 let viewerSound = null;
 let viewerTitle = null;
+let viewerCounter = null;
 
 const emit = (name, detail = {}) => {
   window.dispatchEvent(new CustomEvent(`portfolio:${name}`, { detail }));
@@ -163,6 +164,10 @@ function createLocalRecord(item, section, isReel, track) {
   progress.setAttribute('aria-label', `Seek ${item.title || 'video'}`);
   progress.title = 'Seek video';
   updateSoundButton(soundButton, true);
+  const caption = document.createElement('div');
+  caption.className = 'media-caption';
+  caption.textContent = item.title || 'Video';
+  caption.title = item.title || 'Video';
   expandButton.dataset.label = 'Open';
   expandButton.title = 'Open media viewer';
   controls.append(soundButton, playButton, expandButton);
@@ -170,7 +175,7 @@ function createLocalRecord(item, section, isReel, track) {
   error.className = 'media-error';
   error.textContent = 'Media unavailable · tap to retry';
   error.hidden = true;
-  card.append(video, progress, controls, error);
+  card.append(video, progress, caption, controls, error);
   track.appendChild(card);
   let playToken = 0;
 
@@ -273,10 +278,14 @@ function createRemoteRecord(item, section, isReel, track) {
   const soundButton = createButton('media-sound', 'Turn sound on', icon.mute);
   const expandButton = createButton('media-expand', 'Open in focused viewer', icon.expand);
   updateSoundButton(soundButton, true);
+  const caption = document.createElement('div');
+  caption.className = 'media-caption';
+  caption.textContent = item.title || 'Video';
+  caption.title = item.title || 'Video';
   expandButton.dataset.label = 'Open';
   expandButton.title = 'Open media viewer';
   controls.append(soundButton, playButton, expandButton);
-  card.append(poster, controls);
+  card.append(poster, caption, controls);
   track.appendChild(card);
   let iframe = null;
   let player = null;
@@ -424,7 +433,8 @@ function setupRail(wrap, records) {
     if (!best && SETTINGS.pauseOffscreen && activeRecord && recordByCard.has(activeRecord.card)) {
       stopRecord(activeRecord);
     }
-    if (best && SETTINGS.autoplay && !saveData && !prefersReducedMotion.matches) {
+    const canAutoplay = best && (best.item.src || best.item.autoplay === true);
+    if (best && canAutoplay && SETTINGS.autoplay && !saveData && !prefersReducedMotion.matches) {
       clearTimeout(wrap._autoplayTimer);
       wrap._autoplayTimer = setTimeout(() => {
         if (activeRecord !== best) activateRecord(best, { autoplay: true });
@@ -505,11 +515,22 @@ function renderViewer(records) {
   const record = records[viewerIndex] || records[0]; if (!record) return; viewerRecord = record;
   mediaRecords.forEach(other => stopRecord(other));
   viewerMedia?._media?.pause?.();
-  viewerTitle.textContent = record.item.title || record.section.title; viewerMedia.replaceChildren();
+  viewerTitle.textContent = record.item.title || record.section.title;
+  viewerCounter.textContent = `${String(viewerIndex + 1).padStart(2, '0')} / ${String(records.length).padStart(2, '0')}`;
+  viewerMedia.replaceChildren();
   const item = record.item; let media;
   if (item.src) { media = document.createElement('video'); media.src = item.src; media.poster = getPoster(item); media.playsInline = true; media.loop = item.loop !== false; media.className = item.fit === 'contain' ? 'contain-video' : ''; }
   else { media = document.createElement('iframe'); media.allow = 'autoplay; fullscreen; picture-in-picture'; media.allowFullscreen = true; media.title = item.title || 'Video'; media.src = item.embed === 'youtube' ? `https://www.youtube-nocookie.com/embed/${item.id}?autoplay=1&mute=${soundPreference === 'unmuted' ? 0 : 1}&loop=1&playlist=${item.id}` : `https://player.vimeo.com/video/${item.id}?autoplay=1&muted=${soundPreference === 'unmuted' ? 0 : 1}&loop=1&background=1`; }
-  viewerMedia.appendChild(media); viewerMedia._media = media; viewerMedia._muted = soundPreference !== 'unmuted'; viewerMedia._playing = true;
+  viewerMedia.appendChild(media);
+  viewerMedia._media = media; viewerMedia._muted = soundPreference !== 'unmuted'; viewerMedia._playing = true;
+  if (!localStorage.getItem('portfolio:viewer-hint-seen')) {
+    const hint = document.createElement('div');
+    hint.className = 'viewer-hint';
+    hint.textContent = 'Swipe or scroll to browse';
+    viewerMedia.appendChild(hint);
+    window.setTimeout(() => hint.classList.add('is-hidden'), 2400);
+    localStorage.setItem('portfolio:viewer-hint-seen', '1');
+  }
   viewerPlay.innerHTML = icon.pause; viewerPlay.setAttribute('aria-label', `Pause ${record.item.title || 'video'}`); updateSoundButton(viewerSound, viewerMedia._muted);
   if (item.src) { media.muted = viewerMedia._muted; safePlay(media); media.addEventListener('pause', () => { viewerPlay.innerHTML = icon.play; viewerPlay.setAttribute('aria-label', `Play ${record.item.title || 'video'}`); }); }
   preloadImage(getPoster(records[(viewerIndex + 1) % records.length]?.item || {})); preloadImage(getPoster(records[(viewerIndex - 1 + records.length) % records.length]?.item || {}));
@@ -529,7 +550,7 @@ function viewerMove(direction) {
 
 function setupViewer() {
   if (!viewer) return;
-  viewerTitle = document.getElementById('viewerTitle'); viewerMedia = document.getElementById('viewerMedia'); viewerPlay = document.getElementById('viewerPlay'); viewerSound = document.getElementById('viewerSound');
+  viewerTitle = document.getElementById('viewerTitle'); viewerCounter = document.getElementById('viewerCounter'); viewerMedia = document.getElementById('viewerMedia'); viewerPlay = document.getElementById('viewerPlay'); viewerSound = document.getElementById('viewerSound');
   document.getElementById('viewerClose')?.addEventListener('click', () => closeViewer());
   document.getElementById('viewerPrev')?.addEventListener('click', () => viewerMove(-1)); document.getElementById('viewerNext')?.addEventListener('click', () => viewerMove(1));
   viewerPlay?.addEventListener('click', () => {
@@ -587,6 +608,8 @@ document.querySelector('.hero-title').textContent = CONTENT.hero.role;
 document.querySelector('.profile-ring img').src = CONTENT.hero.profile;
 document.querySelector('.contact a[href^="https://wa.me"]').href = CONTENT.contact.whatsapp;
 document.querySelector('.contact a[href^="mailto:"]').href = CONTENT.contact.email;
+document.querySelector('.end-cta a[href^="https://wa.me"]')?.setAttribute('href', CONTENT.contact.whatsapp);
+document.querySelector('.end-cta a[href^="mailto:"]')?.setAttribute('href', CONTENT.contact.email);
 document.documentElement.dataset.sound = soundPreference;
 const heroSection = document.getElementById('heroSection'); const bannerTest = new Image();
 bannerTest.onload = () => { heroSection.style.backgroundImage = `url('${CONTENT.hero.banner}')`; };

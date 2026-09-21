@@ -35,16 +35,16 @@ window.SITE_CONTENT = {
       // WORK VIDEOS — landscape videos in media/work/
       id: 'work', title: 'Work', type: 'videos', enabled: true,
       items: [
-        { embed: 'vimeo', id: '1219228625', title: 'Vimeo work video' },
-        { src: 'media/work/work-instagram-DbGvmKbIYNr.mp4', title: 'Instagram work video', fit: 'contain' },
-        { src: 'media/work/video6.mp4', title: 'Work video 6' },
-        { src: 'media/work/video1.mp4', title: 'Work video 1' },
-        { src: 'media/work/video2.mp4', title: 'Work video 2' },
-        { src: 'media/work/video3.mp4', title: 'Work video 3' },
-        { src: 'media/work/video4.mp4', title: 'Work video 4' },
-        { src: 'media/work/video5.mp4', title: 'Work video 5' },
-        { src: 'media/reels/klZoxaOZhaU.mp4', title: 'Reel 7' },
-        { src: 'media/reels/L6TfvP04u1g.mp4', title: 'Reel 2' },
+        { embed: 'vimeo', id: '1219228625', title: 'Commercial work' },
+        { src: 'media/work/work-instagram-DbGvmKbIYNr.mp4', title: 'Instagram campaign', fit: 'contain' },
+        { src: 'media/work/video6.mp4', title: 'Work edit 01' },
+        { src: 'media/work/video1.mp4', title: 'Work edit 02' },
+        { src: 'media/work/video2.mp4', title: 'Work edit 03' },
+        { src: 'media/work/video3.mp4', title: 'Work edit 04' },
+        { src: 'media/work/video4.mp4', title: 'Work edit 05' },
+        { src: 'media/work/video5.mp4', title: 'Work edit 06' },
+        { src: 'media/reels/klZoxaOZhaU.mp4', title: 'Vertical edit 01' },
+        { src: 'media/reels/L6TfvP04u1g.mp4', title: 'Vertical edit 02' },
       ],
     },
     {
@@ -64,23 +64,23 @@ window.SITE_CONTENT = {
       // MUSIC VIDEOS — downloaded locally into media/music-videos/
       id: 'music-videos', title: 'Music Videos', type: 'videos', enabled: true,
       items: [
-        { src: 'media/music-videos/music-Zct20ON2u_A.mp4', title: 'Music video 1' },
-        { src: 'media/music-videos/music-rgdSp5Jk4P0.mp4', title: 'Music video 2' },
-        { src: 'media/music-videos/music-8_1dU9pnUNM.mp4', title: 'Music video 3' },
+        { src: 'media/music-videos/music-Zct20ON2u_A.mp4', title: 'Music film 01' },
+        { src: 'media/music-videos/music-rgdSp5Jk4P0.mp4', title: 'Music film 02' },
+        { src: 'media/music-videos/music-8_1dU9pnUNM.mp4', title: 'Music film 03' },
       ],
     },
     {
       // REELS — vertical videos in media/reels/
       id: 'reels', title: 'Reels', type: 'videos', layout: 'reels', enabled: true,
       items: [
-        { src: 'media/reels/Ay-zXQJEMwg.mp4', title: 'Reel 1' },
-        { src: 'media/reels/N5ee7UZBs9E.mp4', title: 'Reel 3' },
-        { src: 'media/reels/XRS-mJe7aXM.mp4', title: 'Reel 4' },
-        { src: 'media/reels/XVfvGTBCNtM.mp4', title: 'Reel 5' },
-        { src: 'media/reels/b6xBVmn9Jek.mp4', title: 'Reel 6' },
-        { src: 'media/reels/mJMwnw6rWGg.mp4', title: 'Reel 8' },
-        { src: 'media/reels/s7C0h1_36n0.mp4', title: 'Reel 9' },
-        { src: 'media/reels/xiNh6f_ogVA.mp4', title: 'Reel 10' },
+        { src: 'media/reels/Ay-zXQJEMwg.mp4', title: 'Vertical edit 03' },
+        { src: 'media/reels/N5ee7UZBs9E.mp4', title: 'Vertical edit 04' },
+        { src: 'media/reels/XRS-mJe7aXM.mp4', title: 'Vertical edit 05' },
+        { src: 'media/reels/XVfvGTBCNtM.mp4', title: 'Vertical edit 06' },
+        { src: 'media/reels/b6xBVmn9Jek.mp4', title: 'Vertical edit 07' },
+        { src: 'media/reels/mJMwnw6rWGg.mp4', title: 'Vertical edit 08' },
+        { src: 'media/reels/s7C0h1_36n0.mp4', title: 'Vertical edit 09' },
+        { src: 'media/reels/xiNh6f_ogVA.mp4', title: 'Vertical edit 10' },
       ],
     },
     {
@@ -88,7 +88,7 @@ window.SITE_CONTENT = {
       id: 'projects', title: 'Projects', type: 'projects', enabled: true,
       items: [
         {
-          title: 'Project one',
+          title: 'Project gallery 01',
           images: [
             'media/projects/11.jpg', 'media/projects/12.jpg', 'media/projects/13.jpg',
             'media/projects/14.jpg', 'media/projects/15.jpg', 'media/projects/16.jpg',
@@ -97,7 +97,7 @@ window.SITE_CONTENT = {
           ],
         },
         {
-          title: 'Project two',
+          title: 'Project gallery 02',
           images: [
             'media/projects/21.jpg', 'media/projects/22.jpg', 'media/projects/23.jpg',
             'media/projects/24.jpg', 'media/projects/25.jpg', 'media/projects/26.jpg',
@@ -105,7 +105,7 @@ window.SITE_CONTENT = {
           ],
         },
         {
-          title: 'Project three',
+          title: 'Project gallery 03',
           images: [
             'media/projects/31.jpg', 'media/projects/32.jpg', 'media/projects/33.jpg',
             'media/projects/34.jpg', 'media/projects/35.jpg', 'media/projects/36.jpg',
@@ -113,7 +113,7 @@ window.SITE_CONTENT = {
           ],
         },
         {
-          title: 'Project four',
+          title: 'Project gallery 04',
           images: [
             'media/projects/optimized/igexport-DdHYJE_jJ_8.jpg',
             'media/projects/optimized/igexport-DdHYJE_jJ_8-2.jpg',
