@@ -1,0 +1,10 @@
+{
+  "name": "marawan-rabah-portfolio",
+  "private": true,
+  "scripts": {
+    "test": "node --test tests/playback.test.cjs"
+  },
+  "devDependencies": {
+    "playwright": "1.61.1"
+  }
+}
