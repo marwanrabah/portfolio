@@ -148,6 +148,15 @@ function createLocalRecord(item, section, isReel, track) {
   const playButton = createButton('media-play', `Play ${item.title || 'video'}`, icon.play);
   const soundButton = createButton('media-sound', 'Turn sound on', icon.mute);
   const expandButton = createButton('media-expand', 'Open in focused viewer', icon.expand);
+  const progress = document.createElement('input');
+  progress.className = 'media-progress';
+  progress.type = 'range';
+  progress.min = '0';
+  progress.max = '100';
+  progress.step = '0.1';
+  progress.value = '0';
+  progress.setAttribute('aria-label', `Seek ${item.title || 'video'}`);
+  progress.title = 'Seek video';
   updateSoundButton(soundButton, true);
   expandButton.dataset.label = 'Open';
   expandButton.title = 'Open media viewer';
@@ -156,11 +165,11 @@ function createLocalRecord(item, section, isReel, track) {
   error.className = 'media-error';
   error.textContent = 'Media unavailable · tap to retry';
   error.hidden = true;
-  card.append(video, controls, error);
+  card.append(video, progress, controls, error);
   track.appendChild(card);
 
   const record = {
-    item, section, card, video, playButton, soundButton, expandButton,
+    item, section, card, video, playButton, soundButton, expandButton, progress,
     load() {
       if (!video.src) {
         video.src = item.src;
@@ -195,9 +204,16 @@ function createLocalRecord(item, section, isReel, track) {
   });
   soundButton.addEventListener('click', event => { event.stopPropagation(); toggleRecordSound(record); });
   expandButton.addEventListener('click', event => { event.stopPropagation(); openViewer(record); });
+  progress.addEventListener('pointerdown', event => event.stopPropagation());
+  progress.addEventListener('click', event => event.stopPropagation());
+  progress.addEventListener('input', event => {
+    event.stopPropagation();
+    if (Number.isFinite(video.duration) && video.duration > 0) {
+      video.currentTime = (Number(event.target.value) / 100) * video.duration;
+    }
+  });
   card.addEventListener('click', () => {
-    if (record.isPlaying() && record.isMuted()) toggleRecordSound(record);
-    else if (record.isPlaying()) stopRecord(record);
+    if (record.isPlaying()) stopRecord(record);
     else activateRecord(record);
   });
   card.addEventListener('keydown', event => {
@@ -214,6 +230,12 @@ function createLocalRecord(item, section, isReel, track) {
     updatePlayButton(playButton, true, item.title);
   });
   video.addEventListener('pause', () => { card.classList.remove('is-playing'); updatePlayButton(playButton, false, item.title); });
+  video.addEventListener('loadedmetadata', () => { progress.disabled = !Number.isFinite(video.duration); });
+  video.addEventListener('timeupdate', () => {
+    if (Number.isFinite(video.duration) && video.duration > 0 && document.activeElement !== progress) {
+      progress.value = String((video.currentTime / video.duration) * 100);
+    }
+  });
   video.addEventListener('ended', () => stopRecord(record, true));
   video.addEventListener('error', () => { error.hidden = false; });
   mediaRecords.push(record);
@@ -301,7 +323,7 @@ function createRemoteRecord(item, section, isReel, track) {
   playButton.addEventListener('click', event => { event.stopPropagation(); if (record.isPlaying()) stopRecord(record); else activateRecord(record); });
   soundButton.addEventListener('click', event => { event.stopPropagation(); toggleRecordSound(record); });
   expandButton.addEventListener('click', event => { event.stopPropagation(); openViewer(record); });
-  card.addEventListener('click', () => { if (record.isPlaying() && record.isMuted()) toggleRecordSound(record); else if (record.isPlaying()) stopRecord(record); else activateRecord(record); });
+  card.addEventListener('click', () => { if (record.isPlaying()) stopRecord(record); else activateRecord(record); });
   card.addEventListener('keydown', event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); if (record.isPlaying()) stopRecord(record); else activateRecord(record); } });
   mediaRecords.push(record);
   return record;
