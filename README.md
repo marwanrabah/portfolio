@@ -43,6 +43,25 @@ when Instagram requires login to download the media.
 
 The Ads section uses Vimeo IDs. Add or remove IDs in `content/content.js`.
 
+## Playback behavior
+
+The site starts media previews muted, autoplaying only the card closest to the
+user inside a visible rail. Visitors can enable sound from a card or the
+focused viewer; that choice is remembered locally. The viewer opens from the
+expand control on a media card and supports swipe, keyboard, and browser-back
+navigation.
+
+Playback settings live at the top of `content/content.js`:
+
+```js
+playback: {
+  autoplay: true,
+  rememberSound: true,
+  pauseOffscreen: true,
+  viewerEnabled: true,
+}
+```
+
 ## Local preview
 
 Because browsers restrict some media behavior when opening HTML directly,

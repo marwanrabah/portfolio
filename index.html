@@ -362,11 +362,126 @@
     /* ── DRAG-TO-SCROLL (videos) ─────────────────── */
     .dragging { cursor: grabbing !important; user-select: none; }
 
+    /* ── INTERACTION LAYER ───────────────────────── */
+    button, a, .video-card, .project-card { -webkit-tap-highlight-color: transparent; }
+
+    :focus-visible {
+      outline: 1px solid rgba(255,255,255,0.75);
+      outline-offset: 3px;
+    }
+
+    .video-scroll-wrap {
+      scroll-snap-type: x mandatory;
+      scroll-padding-inline: 20px;
+      touch-action: pan-x;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .video-card { scroll-snap-align: center; }
+
+    .video-card > video,
+    .video-card > iframe { position: relative; z-index: 1; }
+
+    .media-controls {
+      position: absolute;
+      right: 10px;
+      bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      z-index: 4;
+      pointer-events: none;
+      opacity: 1;
+      transition: opacity 0.2s ease;
+    }
+
+    .media-controls button {
+      width: auto;
+      min-width: 38px;
+      height: 34px;
+      border: 1px solid rgba(255,255,255,0.15);
+      background: rgba(0,0,0,0.7);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+      cursor: pointer;
+      pointer-events: auto;
+      opacity: 0.85;
+    }
+
+    .media-controls button:hover { background: rgba(0,0,0,0.92); opacity: 1; }
+    .media-controls svg { width: 14px; height: 14px; fill: currentColor; stroke: currentColor; stroke-width: 2; }
+    .media-controls button::after {
+      content: attr(data-label);
+      margin-left: 5px;
+      font-family: 'Space Mono', monospace;
+      font-size: 8px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .media-error {
+      position: absolute;
+      inset: auto 8px 8px;
+      z-index: 5;
+      padding: 8px;
+      color: #fff;
+      background: rgba(0,0,0,0.76);
+      font-family: 'Space Mono', monospace;
+      font-size: 9px;
+      letter-spacing: 0.08em;
+      text-align: center;
+      text-transform: uppercase;
+      pointer-events: none;
+    }
+
+    .section-reveal {
+      opacity: 0;
+      transform: translateY(8px);
+      transition: opacity 0.32s ease, transform 0.32s ease;
+    }
+
+    .section-reveal.is-visible { opacity: 1; transform: none; }
+
+    body.viewer-open { overflow: hidden; }
+
+    .media-viewer {
+      width: min(100vw, 1120px);
+      height: min(100vh, 820px);
+      max-width: none;
+      max-height: none;
+      padding: 20px;
+      border: 1px solid var(--border);
+      background: rgba(4,4,4,0.98);
+      color: var(--text);
+    }
+
+    .media-viewer::backdrop { background: rgba(0,0,0,0.88); }
+    .viewer-shell { width: 100%; height: 100%; display: grid; grid-template-rows: auto 1fr auto; gap: 14px; }
+    .viewer-header, .viewer-footer { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+    .viewer-title { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-family: 'Space Mono', monospace; font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--muted); }
+    .viewer-media { min-height: 0; display: flex; align-items: center; justify-content: center; background: #000; overflow: hidden; touch-action: pan-y; }
+    .viewer-media video, .viewer-media iframe { width: 100%; height: 100%; border: 0; object-fit: contain; background: #000; }
+    .viewer-button { width: 34px; height: 34px; border: 1px solid var(--border); background: var(--surface); color: var(--text); display: flex; align-items: center; justify-content: center; cursor: pointer; }
+    .viewer-button:hover { border-color: #444; }
+    .viewer-button svg { width: 15px; height: 15px; fill: currentColor; stroke: currentColor; stroke-width: 2; }
+    .viewer-nav { display: flex; gap: 8px; }
+
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      .section-reveal, .project-card img, .media-controls { transition: none; }
+    }
+
     @media (max-width: 640px) {
       .section-label { padding: 40px 20px 20px; }
       .video-scroll-wrap { padding: 0 20px 32px; }
       .projects-grid, .proof-grid { padding: 0 20px 48px; }
       footer { padding: 20px; flex-direction: column; gap: 8px; }
+      .video-card { width: min(340px, calc(100vw - 40px)); }
+      .video-card.reel-card { width: min(260px, calc(100vw - 56px)); }
+      .media-viewer { width: 100vw; height: 100dvh; padding: max(12px, env(safe-area-inset-top)) 12px max(12px, env(safe-area-inset-bottom)); border: 0; }
     }
   </style>
 </head>
@@ -409,6 +524,27 @@
 
   <!-- Sections are generated in the order defined by content/content.js. -->
   <main id="sectionsRoot"></main>
+
+
+  <dialog class="media-viewer" id="mediaViewer" aria-labelledby="viewerTitle">
+    <div class="viewer-shell">
+      <div class="viewer-header">
+        <div class="viewer-title" id="viewerTitle">Media viewer</div>
+        <button class="viewer-button" id="viewerClose" type="button" aria-label="Close viewer">×</button>
+      </div>
+      <div class="viewer-media" id="viewerMedia"></div>
+      <div class="viewer-footer">
+        <div class="viewer-nav">
+          <button class="viewer-button" id="viewerPrev" type="button" aria-label="Previous media">←</button>
+          <button class="viewer-button" id="viewerNext" type="button" aria-label="Next media">→</button>
+        </div>
+        <div class="viewer-nav">
+          <button class="viewer-button" id="viewerPlay" type="button" aria-label="Pause media">Ⅱ</button>
+          <button class="viewer-button" id="viewerSound" type="button" aria-label="Turn sound on">⌁</button>
+        </div>
+      </div>
+    </div>
+  </dialog>
 
 
   <!-- ── FOOTER ── -->
